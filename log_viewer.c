@@ -43,6 +43,62 @@ void open_file() {
   gtk_widget_destroy(dialog);
 }
 
+GtkTreeModel *create_and_fill_model() {
+
+  GtkTreeStore *store;
+  store = gtk_tree_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+
+  GtkTreeIter iter;
+  for(int i=0;i<5;i++){
+    gtk_tree_store_append(store, &iter, NULL);
+    gtk_tree_store_set(store, &iter, 0, "file://test", 1, "", 2, "", -1);
+
+    GtkTreeIter j;
+    gtk_tree_store_append(store, &j, &iter);
+    gtk_tree_store_set(store, &j, 0, "there", 1, "2", 2, "b", -1);
+  }
+
+  return GTK_TREE_MODEL(store);
+}
+
+GtkWidget *create_view_and_model() {
+  GtkWidget *view = gtk_tree_view_new();
+
+  GtkCellRenderer *renderer;
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
+                                              -1,
+                                              "Reporting Mechanism",
+                                              renderer,
+                                              "text", 0,
+                                              NULL);
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
+                                              -1,
+                                              "Line",
+                                              renderer,
+                                              "text", 1,
+                                              NULL);
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
+                                              -1,
+                                              "Text",
+                                              renderer,
+                                              "text", 2,
+                                              NULL);
+
+  GtkTreeModel *model = create_and_fill_model();
+
+  gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
+
+  g_object_unref(model);
+
+  return view;
+}
+
 int main(int argc, char *argv[]) {
 
   gtk_init(&argc, &argv);
@@ -67,6 +123,12 @@ int main(int argc, char *argv[]) {
 
   gtk_menu_shell_append(GTK_MENU_SHELL(menubar), example);
   gtk_box_pack_start(GTK_BOX(all), menubar, FALSE, FALSE, 0);
+
+  GtkWidget *scrolled_window = gtk_scrolled_window_new(0, 0);
+  gtk_container_add(GTK_CONTAINER(all), scrolled_window);
+  GtkWidget *view = create_view_and_model();
+  gtk_container_add(GTK_CONTAINER(scrolled_window), view);
+  gtk_widget_set_vexpand(scrolled_window, TRUE);
 
   // Events
   gtk_widget_add_events(window, GDK_KEY_PRESS_MASK);
