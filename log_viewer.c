@@ -1,4 +1,19 @@
+#define _XOPEN_SOURCE
+#define _GNU_SOURCE
 #include <gtk/gtk.h>
+#include <time.h>
+
+char filenames[256][256];
+
+typedef struct message_t {
+  char *filename;
+  int line;
+  char *text;
+  int category;
+  time_t timestamp;
+} message_t;
+message_t messages[10000];
+int message_idx = 0;
 
 // Event
 gboolean keyPressCallback(GtkWidget *widget, GdkEventKey *event, gpointer data) {
@@ -100,6 +115,76 @@ GtkWidget *create_view_and_model() {
 }
 
 int main(int argc, char *argv[]) {
+
+  DIR *dir = opendir("logs");
+  if (dir == NULL) {
+    perror("opendir");
+    return EXIT_FAILURE;
+  }
+  int i = 0;
+  struct dirent *dirent;
+  while ((dirent = readdir(dir)) != NULL) {
+    if (dirent->d_name[0] != '.') {
+      char filename[PATH_MAX];
+      sprintf(filename, "logs/%s", dirent->d_name);
+      FILE *f = fopen(filename, "rb");
+      strcpy(filenames[i], filename);
+      i++;
+
+      char *line = NULL;
+      size_t len = 0;
+      ssize_t read;
+
+      int line_no = 0;
+      while ((read = getline(&line, &len, f)) != -1) {
+
+        struct tm tm;
+        while (1) {
+          char *ret;
+
+          memset(&tm, 0, sizeof(tm));
+          ret = strptime(line, "%b %d %H:%M:%S", &tm);
+          if (ret) {
+            tm.tm_year = 122;
+            break;
+          }
+
+          memset(&tm, 0, sizeof(tm));
+          ret = strptime(line, "%a %d %b %Y %H:%M:%S", &tm);
+          if (ret) {
+            break;
+          }
+
+          printf("Not handled: %s", line);
+          break;
+        }
+
+        time_t timestamp = mktime(&tm);
+        messages[message_idx].filename = filenames[i - 1];
+        messages[message_idx].line = line_no;
+        messages[message_idx].text = malloc(strlen(line) + 1);
+        strcpy(messages[message_idx].text, line);
+        messages[message_idx].text[strlen(line) - 1] = 0; // Removes newline
+        messages[message_idx].category = 0;
+        messages[message_idx].timestamp = timestamp;
+        message_idx++;
+        line_no++;
+      }
+
+      if (line) {
+        free(line);
+      }
+
+      if (f) {
+        fclose(f);
+      }
+    }
+  }
+  closedir(dir);
+
+  for (int i = 0; i < message_idx; i++) {
+    printf("%s %lu %s\n", messages[i].filename, messages[i].timestamp, messages[i].text);
+  }
 
   gtk_init(&argc, &argv);
 
