@@ -1,12 +1,13 @@
 #define _XOPEN_SOURCE
 #define _GNU_SOURCE
 #include <gtk/gtk.h>
+#include <regex.h>
 #include <time.h>
 
 char filenames[256][256];
 
 typedef struct message_t {
-  char *filename;
+  char *reporting_mechanism;
   int line;
   char *text;
   int category;
@@ -61,66 +62,32 @@ void open_file() {
 GtkTreeModel *create_and_fill_model() {
 
   GtkTreeStore *store;
-  store = gtk_tree_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-
-  GtkTreeIter iter;
-  for(int i=0;i<5;i++){
-    gtk_tree_store_append(store, &iter, NULL);
-    gtk_tree_store_set(store, &iter, 0, "file://test", 1, "", 2, "", -1);
-
-    GtkTreeIter j;
-    gtk_tree_store_append(store, &j, &iter);
-    gtk_tree_store_set(store, &j, 0, "there", 1, "2", 2, "b", -1);
-  }
-
-  return GTK_TREE_MODEL(store);
-}
-
-GtkWidget *create_view_and_model() {
-  GtkWidget *view = gtk_tree_view_new();
-
-  GtkCellRenderer *renderer;
-
-  renderer = gtk_cell_renderer_text_new();
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
-                                              -1,
-                                              "Reporting Mechanism",
-                                              renderer,
-                                              "text", 0,
-                                              NULL);
-
-  renderer = gtk_cell_renderer_text_new();
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
-                                              -1,
-                                              "Line",
-                                              renderer,
-                                              "text", 1,
-                                              NULL);
-
-  renderer = gtk_cell_renderer_text_new();
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
-                                              -1,
-                                              "Text",
-                                              renderer,
-                                              "text", 2,
-                                              NULL);
-
-  GtkTreeModel *model = create_and_fill_model();
-
-  gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
-
-  g_object_unref(model);
-
-  return view;
-}
-
-int main(int argc, char *argv[]) {
+  store = gtk_tree_store_new(5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
   DIR *dir = opendir("logs");
   if (dir == NULL) {
     perror("opendir");
-    return EXIT_FAILURE;
+    return NULL;
   }
+
+  GtkTreeIter aiter;
+  GtkTreeIter biter;
+  GtkTreeIter citer;
+
+  regex_t error_regex;
+  regex_t warning_regex;
+
+  regcomp(&error_regex, "error", REG_ICASE);
+  regcomp(&warning_regex, "warn", REG_ICASE);
+
+  gtk_tree_store_append(store, &aiter, NULL);
+  gtk_tree_store_append(store, &biter, NULL);
+  gtk_tree_store_append(store, &citer, NULL);
+
+  int amt_e=0;
+  int amt_w=0;
+  int amt_u=0;
+
   int i = 0;
   struct dirent *dirent;
   while ((dirent = readdir(dir)) != NULL) {
@@ -160,7 +127,8 @@ int main(int argc, char *argv[]) {
         }
 
         time_t timestamp = mktime(&tm);
-        messages[message_idx].filename = filenames[i - 1];
+        line[strlen(line)-1]=0;
+        messages[message_idx].reporting_mechanism = filenames[i - 1];
         messages[message_idx].line = line_no;
         messages[message_idx].text = malloc(strlen(line) + 1);
         strcpy(messages[message_idx].text, line);
@@ -169,6 +137,20 @@ int main(int argc, char *argv[]) {
         messages[message_idx].timestamp = timestamp;
         message_idx++;
         line_no++;
+        GtkTreeIter j;
+        if(regexec(&error_regex, line, 0, NULL, 0)==0){
+          gtk_tree_store_append(store, &j, &aiter);
+          amt_e++;
+        }else if(regexec(&warning_regex, line, 0, NULL, 0)==0){
+          gtk_tree_store_append(store, &j, &biter);
+          amt_w++;
+        }else{
+          gtk_tree_store_append(store, &j, &citer);
+          amt_u++;
+        }
+        char number[256];
+        sprintf(number, "%d", line_no);
+        gtk_tree_store_set(store, &j, 0, "", 1, "", 2, filenames[i-1], 3, number, 4, line, -1);
       }
 
       if (line) {
@@ -180,11 +162,74 @@ int main(int argc, char *argv[]) {
       }
     }
   }
+  char buf[256];
+  sprintf(buf, "%d", amt_e);
+  gtk_tree_store_set(store, &aiter, 0, "Errors", 1, buf, 2, "", 3, "", -1);
+  sprintf(buf, "%d", amt_w);
+  gtk_tree_store_set(store, &biter, 0, "Warnings", 1, buf, 2, "", 3, "", -1);
+  sprintf(buf, "%d", amt_u);
+  gtk_tree_store_set(store, &citer, 0, "Uncategorized", 1, buf, 2, "", 3, "", -1);
   closedir(dir);
 
-  for (int i = 0; i < message_idx; i++) {
-    printf("%s %lu %s\n", messages[i].filename, messages[i].timestamp, messages[i].text);
-  }
+
+  return GTK_TREE_MODEL(store);
+}
+
+GtkWidget *create_view_and_model() {
+  GtkWidget *view = gtk_tree_view_new();
+
+  GtkCellRenderer *renderer;
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
+                                              -1,
+                                              "Category",
+                                              renderer,
+                                              "text", 0,
+                                              NULL);
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
+                                              -1,
+                                              "Amount",
+                                              renderer,
+                                              "text", 1,
+                                              NULL);
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
+                                              -1,
+                                              "Reporting Mechanism",
+                                              renderer,
+                                              "text", 2,
+                                              NULL);
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
+                                              -1,
+                                              "Line",
+                                              renderer,
+                                              "text", 3,
+                                              NULL);
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
+                                              -1,
+                                              "Text",
+                                              renderer,
+                                              "text", 4,
+                                              NULL);
+
+  GtkTreeModel *model = create_and_fill_model();
+
+  gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
+
+  g_object_unref(model);
+
+  return view;
+}
+
+int main(int argc, char *argv[]) {
 
   gtk_init(&argc, &argv);
 
