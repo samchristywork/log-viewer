@@ -239,7 +239,6 @@ int main(int argc, char *argv[]) {
   gtk_container_add(GTK_CONTAINER(window), all);
 
   GtkWidget *menubar = gtk_menu_bar_new();
-  GtkWidget *fileMenu = gtk_menu_new();
 
   GtkWidget *menu_file = gtk_menu_item_new_with_label("File");
   GtkWidget *menu_edit = gtk_menu_item_new_with_label("Edit");
@@ -247,18 +246,23 @@ int main(int argc, char *argv[]) {
   GtkWidget *menu_tools = gtk_menu_item_new_with_label("Tools");
   GtkWidget *menu_help = gtk_menu_item_new_with_label("Help");
 
-  GtkWidget *open = gtk_menu_item_new_with_label("Open");
-  GtkWidget *quit = gtk_menu_item_new_with_label("Quit");
-
   gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_file);
   gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_edit);
   gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_view);
   gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_tools);
   gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_help);
 
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_file), fileMenu);
-  gtk_menu_shell_append(GTK_MENU_SHELL(fileMenu), open);
-  gtk_menu_shell_append(GTK_MENU_SHELL(fileMenu), quit);
+  GtkWidget *file_submenu = gtk_menu_new();
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_file), file_submenu);
+  GtkWidget *open = gtk_menu_item_new_with_label("Open");
+  GtkWidget *quit = gtk_menu_item_new_with_label("Quit");
+  gtk_menu_shell_append(GTK_MENU_SHELL(file_submenu), open);
+  gtk_menu_shell_append(GTK_MENU_SHELL(file_submenu), quit);
+
+  GtkWidget *edit_submenu = gtk_menu_new();
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_edit), edit_submenu);
+  GtkWidget *foo = gtk_menu_item_new_with_label("Foo");
+  gtk_menu_shell_append(GTK_MENU_SHELL(edit_submenu), foo);
 
   gtk_box_pack_start(GTK_BOX(all), menubar, FALSE, FALSE, 0);
 
