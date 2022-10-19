@@ -205,6 +205,27 @@ GtkWidget *create_view_and_model(GtkWidget *view) {
   return view;
 }
 
+
+void show_about() {
+  GdkPixbuf *pbuf = gdk_pixbuf_new_from_file("image.png", NULL);
+  char *authors[] = {
+      "Sam Christy",
+      NULL};
+  gtk_show_about_dialog(NULL,
+                        "authors", authors,
+                        "comments", "\"There are two ways of constructing a software design: One way is to make it so simple that there are obviously no deficiencies, and the other way is to make it so complicated that there are no obvious deficiencies. The first method is far more difficult.\" - C. A. R. Hoare",
+                        "copyright", "©2022 Sam Christy",
+                        "license", "GNU General Public License version 3 (GPLv3)",
+                        "license-type", GTK_LICENSE_GPL_3_0,
+                        "logo", pbuf,
+                        "program-name", "Log Viewer",
+                        "title", "About Log Viewer",
+                        "version", "v1.0.0",
+                        "website", "https://github.com/samchristywork",
+                        "website-label", "github.com/samchristywork",
+                        NULL);
+}
+
 int main(int argc, char *argv[]) {
 
   gtk_init(&argc, &argv);
