@@ -85,7 +85,7 @@ GtkTreeModel *create_and_fill_model() {
   GtkTreeStore *store;
   store = gtk_tree_store_new(5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
-  DIR *dir = opendir("logs");
+  DIR *dir = opendir("data");
   if (dir == NULL) {
     perror("opendir");
     return NULL;
@@ -108,7 +108,7 @@ GtkTreeModel *create_and_fill_model() {
   while ((dirent = readdir(dir)) != NULL) {
     if (dirent->d_name[0] != '.') {
       char filename[PATH_MAX];
-      sprintf(filename, "logs/%s", dirent->d_name);
+      sprintf(filename, "data/%s", dirent->d_name);
       FILE *f = fopen(filename, "rb");
       strcpy(filenames[i], filename);
       i++;
