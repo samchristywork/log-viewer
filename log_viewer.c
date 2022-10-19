@@ -137,7 +137,7 @@ GtkTreeModel *create_and_fill_model() {
             break;
           }
 
-          printf("Not handled: %s", line);
+          printf("Timestamp not handled: %s", line);
           break;
         }
 
@@ -191,50 +191,12 @@ GtkTreeModel *create_and_fill_model() {
   return GTK_TREE_MODEL(store);
 }
 
-GtkWidget *create_view_and_model() {
-  GtkWidget *view = gtk_tree_view_new();
-
-  GtkCellRenderer *renderer;
-
-  renderer = gtk_cell_renderer_text_new();
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
-                                              -1,
-                                              "Category",
-                                              renderer,
-                                              "text", 0,
-                                              NULL);
-
-  renderer = gtk_cell_renderer_text_new();
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
-                                              -1,
-                                              "Amount",
-                                              renderer,
-                                              "text", 1,
-                                              NULL);
-
-  renderer = gtk_cell_renderer_text_new();
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
-                                              -1,
-                                              "Reporting Mechanism",
-                                              renderer,
-                                              "text", 2,
-                                              NULL);
-
-  renderer = gtk_cell_renderer_text_new();
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
-                                              -1,
-                                              "Line",
-                                              renderer,
-                                              "text", 3,
-                                              NULL);
-
-  renderer = gtk_cell_renderer_text_new();
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
-                                              -1,
-                                              "Text",
-                                              renderer,
-                                              "text", 4,
-                                              NULL);
+GtkWidget *create_view_and_model(GtkWidget *view) {
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Category", gtk_cell_renderer_text_new(), "text", 0, NULL);
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Amount", gtk_cell_renderer_text_new(), "text", 1, NULL);
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Reporting Mechanism", gtk_cell_renderer_text_new(), "text", 2, NULL);
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Line", gtk_cell_renderer_text_new(), "text", 3, NULL);
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Text", gtk_cell_renderer_text_new(), "text", 4, NULL);
 
   GtkTreeModel *model = create_and_fill_model();
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
