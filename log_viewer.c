@@ -4,7 +4,8 @@
 #include <regex.h>
 #include <time.h>
 
-char filenames[256][256];
+char filenames[1024][1024];
+GtkWidget *statusbar;
 
 typedef struct message_t {
   char *reporting_mechanism;
@@ -162,6 +163,7 @@ GtkTreeModel *create_and_fill_model() {
       }
     }
   }
+  int total=0;
   char buf[256];
   sprintf(buf, "%d", amt_e);
   gtk_tree_store_set(store, &aiter, 0, "Errors", 1, buf, 2, "", 3, "", -1);
@@ -171,6 +173,9 @@ GtkTreeModel *create_and_fill_model() {
   gtk_tree_store_set(store, &citer, 0, "Uncategorized", 1, buf, 2, "", 3, "", -1);
   closedir(dir);
 
+  sprintf(buf, "%d messages tracked.", total);
+  gtk_statusbar_remove_all(GTK_STATUSBAR(statusbar), 0);
+  gtk_statusbar_push(GTK_STATUSBAR(statusbar), 0, buf);
 
   return GTK_TREE_MODEL(store);
 }
@@ -221,9 +226,7 @@ GtkWidget *create_view_and_model() {
                                               NULL);
 
   GtkTreeModel *model = create_and_fill_model();
-
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
-
   g_object_unref(model);
 
   return view;
@@ -263,6 +266,8 @@ int main(int argc, char *argv[]) {
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_edit), edit_submenu);
   GtkWidget *foo = gtk_menu_item_new_with_label("Foo");
   gtk_menu_shell_append(GTK_MENU_SHELL(edit_submenu), foo);
+  statusbar = GTK_WIDGET(gtk_builder_get_object(builder, "statusbar"));
+  GtkWidget *about = GTK_WIDGET(gtk_builder_get_object(builder, "about"));
 
   gtk_box_pack_start(GTK_BOX(all), menubar, FALSE, FALSE, 0);
 
