@@ -230,58 +230,35 @@ int main(int argc, char *argv[]) {
 
   gtk_init(&argc, &argv);
 
-  GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  GtkBuilder *builder = gtk_builder_new();
+  gtk_builder_add_from_file(builder, "log_viewer.glade", NULL);
 
-  GtkWidget *all = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_container_add(GTK_CONTAINER(window), all);
+  GtkWidget *window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
+  gtk_window_set_default_size(GTK_WINDOW(window), 1000, 700);
 
-  GtkWidget *menubar = gtk_menu_bar_new();
-
-  GtkWidget *menu_file = gtk_menu_item_new_with_label("File");
-  GtkWidget *menu_edit = gtk_menu_item_new_with_label("Edit");
-  GtkWidget *menu_view = gtk_menu_item_new_with_label("View");
-  GtkWidget *menu_tools = gtk_menu_item_new_with_label("Tools");
-  GtkWidget *menu_help = gtk_menu_item_new_with_label("Help");
-
-  gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_file);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_edit);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_view);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_tools);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_help);
-
-  GtkWidget *file_submenu = gtk_menu_new();
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_file), file_submenu);
-  GtkWidget *open = gtk_menu_item_new_with_label("Open");
-  GtkWidget *quit = gtk_menu_item_new_with_label("Quit");
-  gtk_menu_shell_append(GTK_MENU_SHELL(file_submenu), open);
-  gtk_menu_shell_append(GTK_MENU_SHELL(file_submenu), quit);
-
-  GtkWidget *edit_submenu = gtk_menu_new();
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_edit), edit_submenu);
-  GtkWidget *foo = gtk_menu_item_new_with_label("Foo");
-  gtk_menu_shell_append(GTK_MENU_SHELL(edit_submenu), foo);
   statusbar = GTK_WIDGET(gtk_builder_get_object(builder, "statusbar"));
   GtkWidget *about = GTK_WIDGET(gtk_builder_get_object(builder, "about"));
 
-  gtk_box_pack_start(GTK_BOX(all), menubar, FALSE, FALSE, 0);
+  GtkWidget *treeview = GTK_WIDGET(gtk_builder_get_object(builder, "treeview"));
+  create_view_and_model(treeview);
 
-  GtkWidget *scrolled_window = gtk_scrolled_window_new(0, 0);
-  gtk_container_add(GTK_CONTAINER(all), scrolled_window);
-  GtkWidget *view = create_view_and_model();
-  gtk_container_add(GTK_CONTAINER(scrolled_window), view);
-  gtk_widget_set_vexpand(scrolled_window, TRUE);
+  GtkWidget *quit = GTK_WIDGET(gtk_builder_get_object(builder, "quit"));
 
   // CSS
   GtkCssProvider *css = gtk_css_provider_new();
   gtk_css_provider_load_from_path(css, "style.css", NULL);
   gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(css), GTK_STYLE_PROVIDER_PRIORITY_USER);
 
+  gtk_builder_connect_signals(builder, NULL);
+
   // Events
   gtk_widget_add_events(window, GDK_KEY_PRESS_MASK);
-  g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(keyPressCallback), NULL);
-  g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(quit), "activate", G_CALLBACK(gtk_main_quit), NULL);
-  g_signal_connect(G_OBJECT(open), "activate", G_CALLBACK(open_file), NULL);
+  g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
+  g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(keyPressCallback), NULL);
+  g_signal_connect(G_OBJECT(about), "activate", G_CALLBACK(show_about), NULL);
+
+  g_object_unref(builder);
 
   gtk_widget_show_all(window);
   gtk_main();
