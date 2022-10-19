@@ -17,6 +17,16 @@ typedef struct message_t {
 message_t messages[10000];
 int message_idx = 0;
 
+typedef struct filter_t {
+  GtkTreeIter iter;
+  regex_t compiled_regex;
+  int count;
+  char label[256];
+  char regex[1024];
+} filter_t;
+struct filter_t *filters;
+int num_filters=0;
+
 // Event
 gboolean keyPressCallback(GtkWidget *widget, GdkEventKey *event, gpointer data) {
   if (event->keyval == GDK_KEY_Escape) {
@@ -60,6 +70,16 @@ void open_file() {
   gtk_widget_destroy(dialog);
 }
 
+void add_filter(char *label, char *regex){
+  filters=realloc(filters, (num_filters+1)*sizeof(filter_t));
+
+  strcpy(filters[num_filters].regex, regex);
+  strcpy(filters[num_filters].label, label);
+  regcomp(&filters[num_filters].compiled_regex, filters[num_filters].regex, REG_ICASE);
+  filters[num_filters].count=0;
+  num_filters++;
+}
+
 GtkTreeModel *create_and_fill_model() {
 
   GtkTreeStore *store;
@@ -71,23 +91,17 @@ GtkTreeModel *create_and_fill_model() {
     return NULL;
   }
 
-  GtkTreeIter aiter;
-  GtkTreeIter biter;
-  GtkTreeIter citer;
+  filters=malloc(0);
 
-  regex_t error_regex;
-  regex_t warning_regex;
+  add_filter("Tracker Miner", "tracker.miner");
+  add_filter("Pipewire", "pipewire");
+  add_filter("Errors", "error");
+  add_filter("Warnings", "warn");
+  add_filter("Uncategorized", "");
 
-  regcomp(&error_regex, "error", REG_ICASE);
-  regcomp(&warning_regex, "warn", REG_ICASE);
-
-  gtk_tree_store_append(store, &aiter, NULL);
-  gtk_tree_store_append(store, &biter, NULL);
-  gtk_tree_store_append(store, &citer, NULL);
-
-  int amt_e=0;
-  int amt_w=0;
-  int amt_u=0;
+  for(int i=0;i<num_filters;i++){
+    gtk_tree_store_append(store, &filters[i].iter, NULL);
+  }
 
   int i = 0;
   struct dirent *dirent;
@@ -139,16 +153,14 @@ GtkTreeModel *create_and_fill_model() {
         message_idx++;
         line_no++;
         GtkTreeIter j;
-        if(regexec(&error_regex, line, 0, NULL, 0)==0){
-          gtk_tree_store_append(store, &j, &aiter);
-          amt_e++;
-        }else if(regexec(&warning_regex, line, 0, NULL, 0)==0){
-          gtk_tree_store_append(store, &j, &biter);
-          amt_w++;
-        }else{
-          gtk_tree_store_append(store, &j, &citer);
-          amt_u++;
+        for(int i=0;i<num_filters;i++){
+          if(regexec(&filters[i].compiled_regex, line, 0, NULL, 0)==0){
+            gtk_tree_store_append(store, &j, &filters[i].iter);
+            filters[i].count++;
+            break;
+          }
         }
+
         char number[256];
         sprintf(number, "%d", line_no);
         gtk_tree_store_set(store, &j, 0, "", 1, "", 2, filenames[i-1], 3, number, 4, line, -1);
@@ -165,12 +177,11 @@ GtkTreeModel *create_and_fill_model() {
   }
   int total=0;
   char buf[256];
-  sprintf(buf, "%d", amt_e);
-  gtk_tree_store_set(store, &aiter, 0, "Errors", 1, buf, 2, "", 3, "", -1);
-  sprintf(buf, "%d", amt_w);
-  gtk_tree_store_set(store, &biter, 0, "Warnings", 1, buf, 2, "", 3, "", -1);
-  sprintf(buf, "%d", amt_u);
-  gtk_tree_store_set(store, &citer, 0, "Uncategorized", 1, buf, 2, "", 3, "", -1);
+  for(int i=0;i<num_filters;i++){
+    total+=filters[i].count;
+    sprintf(buf, "%d", filters[i].count);
+    gtk_tree_store_set(store, &filters[i].iter, 0, filters[i].label, 1, buf, 2, "", 3, "", -1);
+  }
   closedir(dir);
 
   sprintf(buf, "%d messages tracked.", total);
