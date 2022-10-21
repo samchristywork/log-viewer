@@ -1,5 +1,4 @@
 #define _XOPEN_SOURCE
-#define _GNU_SOURCE
 #include <gtk/gtk.h>
 #include <regex.h>
 #include <time.h>
@@ -25,7 +24,7 @@ typedef struct filter_t {
   char regex[1024];
 } filter_t;
 struct filter_t *filters;
-int num_filters=0;
+int num_filters = 0;
 
 // Event
 gboolean keyPressCallback(GtkWidget *widget, GdkEventKey *event, gpointer data) {
@@ -58,25 +57,26 @@ void open_file() {
       size_t len = ftell(f);
       rewind(f);
 
-      char str[len + 1];
+      char *str = (char *)malloc(len + 1);
       fread(str, 1, len, f);
       str[len] = 0;
       fclose(f);
 
       puts(str);
+      free(str);
     }
     g_free(filename);
   }
   gtk_widget_destroy(dialog);
 }
 
-void add_filter(char *label, char *regex){
-  filters=realloc(filters, (num_filters+1)*sizeof(filter_t));
+void add_filter(const char *label, const char *regex) {
+  filters = (filter_t *)realloc(filters, (num_filters + 1) * sizeof(filter_t));
 
   strcpy(filters[num_filters].regex, regex);
   strcpy(filters[num_filters].label, label);
   regcomp(&filters[num_filters].compiled_regex, filters[num_filters].regex, REG_ICASE);
-  filters[num_filters].count=0;
+  filters[num_filters].count = 0;
   num_filters++;
 }
 
@@ -91,7 +91,7 @@ GtkTreeModel *create_and_fill_model() {
     return NULL;
   }
 
-  filters=malloc(0);
+  filters = (filter_t *)malloc(0);
 
   add_filter("Tracker Miner", "tracker.miner");
   add_filter("Pipewire", "pipewire");
@@ -99,7 +99,7 @@ GtkTreeModel *create_and_fill_model() {
   add_filter("Warnings", "warn");
   add_filter("Uncategorized", "");
 
-  for(int i=0;i<num_filters;i++){
+  for (int i = 0; i < num_filters; i++) {
     gtk_tree_store_append(store, &filters[i].iter, NULL);
   }
 
@@ -142,10 +142,10 @@ GtkTreeModel *create_and_fill_model() {
         }
 
         time_t timestamp = mktime(&tm);
-        line[strlen(line)-1]=0;
+        line[strlen(line) - 1] = 0;
         messages[message_idx].reporting_mechanism = filenames[i - 1];
         messages[message_idx].line = line_no;
-        messages[message_idx].text = malloc(strlen(line) + 1);
+        messages[message_idx].text = (char *)malloc(strlen(line) + 1);
         strcpy(messages[message_idx].text, line);
         messages[message_idx].text[strlen(line) - 1] = 0; // Removes newline
         messages[message_idx].category = 0;
@@ -153,8 +153,8 @@ GtkTreeModel *create_and_fill_model() {
         message_idx++;
         line_no++;
         GtkTreeIter j;
-        for(int i=0;i<num_filters;i++){
-          if(regexec(&filters[i].compiled_regex, line, 0, NULL, 0)==0){
+        for (int i = 0; i < num_filters; i++) {
+          if (regexec(&filters[i].compiled_regex, line, 0, NULL, 0) == 0) {
             gtk_tree_store_append(store, &j, &filters[i].iter);
             filters[i].count++;
             break;
@@ -163,7 +163,7 @@ GtkTreeModel *create_and_fill_model() {
 
         char number[256];
         sprintf(number, "%d", line_no);
-        gtk_tree_store_set(store, &j, 0, "", 1, "", 2, filenames[i-1], 3, number, 4, line, -1);
+        gtk_tree_store_set(store, &j, 0, "", 1, "", 2, filenames[i - 1], 3, number, 4, line, -1);
       }
 
       if (line) {
@@ -175,10 +175,10 @@ GtkTreeModel *create_and_fill_model() {
       }
     }
   }
-  int total=0;
+  int total = 0;
   char buf[256];
-  for(int i=0;i<num_filters;i++){
-    total+=filters[i].count;
+  for (int i = 0; i < num_filters; i++) {
+    total += filters[i].count;
     sprintf(buf, "%d", filters[i].count);
     gtk_tree_store_set(store, &filters[i].iter, 0, filters[i].label, 1, buf, 2, "", 3, "", -1);
   }
@@ -208,7 +208,7 @@ GtkWidget *create_view_and_model(GtkWidget *view) {
 
 void show_about() {
   GdkPixbuf *pbuf = gdk_pixbuf_new_from_file("image.png", NULL);
-  char *authors[] = {
+  const char *authors[] = {
       "Sam Christy",
       NULL};
   gtk_show_about_dialog(NULL,
