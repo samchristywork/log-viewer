@@ -1,6 +1,7 @@
 #define _XOPEN_SOURCE
 #include <boost/filesystem.hpp>
 #include <gtk/gtk.h>
+#include <iomanip>
 #include <regex.h>
 
 char filenames[1024][1024];
@@ -80,6 +81,16 @@ void add_filter(const char *label, const char *regex) {
   num_filters++;
 }
 
+char *strptime2(const char *s, const char *format, struct tm *tm) {
+  std::istringstream input(s);
+  input.imbue(std::locale(setlocale(LC_ALL, nullptr)));
+  input >> std::get_time(tm, format);
+  if (input.fail()) {
+    return nullptr;
+  }
+  return (char *)(s + input.tellg());
+}
+
 GtkTreeModel *create_and_fill_model() {
 
   GtkTreeStore *store;
@@ -122,14 +133,14 @@ GtkTreeModel *create_and_fill_model() {
         char *ret;
 
         memset(&tm, 0, sizeof(tm));
-        ret = strptime(line, "%b %d %H:%M:%S", &tm);
+        ret = strptime2(line, "%b %d %H:%M:%S", &tm);
         if (ret) {
           tm.tm_year = 122;
           break;
         }
 
         memset(&tm, 0, sizeof(tm));
-        ret = strptime(line, "%a %d %b %Y %H:%M:%S", &tm);
+        ret = strptime2(line, "%a %d %b %Y %H:%M:%S", &tm);
         if (ret) {
           break;
         }
@@ -178,7 +189,6 @@ GtkTreeModel *create_and_fill_model() {
     sprintf(buf, "%d", filters[i].count);
     gtk_tree_store_set(store, &filters[i].iter, 0, filters[i].label, 1, buf, 2, "", 3, "", -1);
   }
-  closedir(dir);
 
   sprintf(buf, "%d messages tracked.", total);
   gtk_statusbar_remove_all(GTK_STATUSBAR(statusbar), 0);
