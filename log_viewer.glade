@@ -7,6 +7,11 @@
     <property name="can-focus">False</property>
     <property name="stock">gtk-apply</property>
   </object>
+  <object class="GtkImage" id="image2">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-add</property>
+  </object>
   <object class="GtkWindow" id="window">
     <property name="can-focus">False</property>
     <child>
@@ -202,7 +207,17 @@
               </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkButton">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="image">image3</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
             </child>
             <child>
               <placeholder/>
@@ -247,6 +262,9 @@
               <object class="GtkTreeView" id="treeview">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
+                <child internal-child="selection">
+                  <object class="GtkTreeSelection"/>
+                </child>
               </object>
             </child>
           </object>
@@ -278,9 +296,10 @@
       </object>
     </child>
   </object>
-  <object class="GtkImage" id="image2">
+  <object class="GtkImage" id="image3">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="stock">gtk-add</property>
+    <property name="tooltip-text" translatable="yes">Date Range</property>
+    <property name="pixbuf">date.svg</property>
   </object>
 </interface>
