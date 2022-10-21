@@ -1,7 +1,7 @@
 #define _XOPEN_SOURCE
+#include <boost/filesystem.hpp>
 #include <gtk/gtk.h>
 #include <regex.h>
-#include <time.h>
 
 char filenames[1024][1024];
 GtkWidget *statusbar;
@@ -85,11 +85,6 @@ GtkTreeModel *create_and_fill_model() {
   GtkTreeStore *store;
   store = gtk_tree_store_new(5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
-  DIR *dir = opendir("data");
-  if (dir == NULL) {
-    perror("opendir");
-    return NULL;
-  }
 
   filters = (filter_t *)malloc(0);
 
@@ -103,76 +98,77 @@ GtkTreeModel *create_and_fill_model() {
     gtk_tree_store_append(store, &filters[i].iter, NULL);
   }
 
+  boost::filesystem::directory_iterator iter{"sample_data"};
+
   int i = 0;
-  struct dirent *dirent;
-  while ((dirent = readdir(dir)) != NULL) {
-    if (dirent->d_name[0] != '.') {
-      char filename[PATH_MAX];
-      sprintf(filename, "data/%s", dirent->d_name);
-      FILE *f = fopen(filename, "rb");
-      strcpy(filenames[i], filename);
-      i++;
+  while (iter != boost::filesystem::directory_iterator{}) {
+    std::string filepath = (*iter++).path().string();
+    char filename[PATH_MAX];
+    sprintf(filename, "%s", filepath.c_str());
+    puts(filename);
+    FILE *f = fopen(filename, "rb");
+    strcpy(filenames[i], filename);
+    i++;
 
-      char *line = NULL;
-      size_t len = 0;
-      ssize_t read;
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
 
-      int line_no = 0;
-      while ((read = getline(&line, &len, f)) != -1) {
+    int line_no = 0;
+    while ((read = getline(&line, &len, f)) != -1) {
 
-        struct tm tm;
-        while (1) {
-          char *ret;
+      struct tm tm;
+      while (1) {
+        char *ret;
 
-          memset(&tm, 0, sizeof(tm));
-          ret = strptime(line, "%b %d %H:%M:%S", &tm);
-          if (ret) {
-            tm.tm_year = 122;
-            break;
-          }
-
-          memset(&tm, 0, sizeof(tm));
-          ret = strptime(line, "%a %d %b %Y %H:%M:%S", &tm);
-          if (ret) {
-            break;
-          }
-
-          printf("Timestamp not handled: %s", line);
+        memset(&tm, 0, sizeof(tm));
+        ret = strptime(line, "%b %d %H:%M:%S", &tm);
+        if (ret) {
+          tm.tm_year = 122;
           break;
         }
 
-        time_t timestamp = mktime(&tm);
-        line[strlen(line) - 1] = 0;
-        messages[message_idx].reporting_mechanism = filenames[i - 1];
-        messages[message_idx].line = line_no;
-        messages[message_idx].text = (char *)malloc(strlen(line) + 1);
-        strcpy(messages[message_idx].text, line);
-        messages[message_idx].text[strlen(line) - 1] = 0; // Removes newline
-        messages[message_idx].category = 0;
-        messages[message_idx].timestamp = timestamp;
-        message_idx++;
-        line_no++;
-        GtkTreeIter j;
-        for (int i = 0; i < num_filters; i++) {
-          if (regexec(&filters[i].compiled_regex, line, 0, NULL, 0) == 0) {
-            gtk_tree_store_append(store, &j, &filters[i].iter);
-            filters[i].count++;
-            break;
-          }
+        memset(&tm, 0, sizeof(tm));
+        ret = strptime(line, "%a %d %b %Y %H:%M:%S", &tm);
+        if (ret) {
+          break;
         }
 
-        char number[256];
-        sprintf(number, "%d", line_no);
-        gtk_tree_store_set(store, &j, 0, "", 1, "", 2, filenames[i - 1], 3, number, 4, line, -1);
+        printf("Timestamp not handled: %s", line);
+        break;
       }
 
-      if (line) {
-        free(line);
+      time_t timestamp = mktime(&tm);
+      line[strlen(line) - 1] = 0;
+      messages[message_idx].reporting_mechanism = filenames[i - 1];
+      messages[message_idx].line = line_no;
+      messages[message_idx].text = (char *)malloc(strlen(line) + 1);
+      strcpy(messages[message_idx].text, line);
+      messages[message_idx].text[strlen(line) - 1] = 0; // Removes newline
+      messages[message_idx].category = 0;
+      messages[message_idx].timestamp = timestamp;
+      message_idx++;
+      line_no++;
+      GtkTreeIter j;
+      for (int i = 0; i < num_filters; i++) {
+        if (regexec(&filters[i].compiled_regex, line, 0, NULL, 0) == 0) {
+          gtk_tree_store_append(store, &j, &filters[i].iter);
+          filters[i].count++;
+          break;
+        }
       }
 
-      if (f) {
-        fclose(f);
-      }
+      char number[256];
+      sprintf(number, "%d", line_no);
+      gtk_tree_store_set(store, &j, 0, "", 1, "", 2, filenames[i - 1], 3, number, 4, line, -1);
+    }
+
+    if (line) {
+      free(line);
+    }
+
+    if (f) {
+      fclose(f);
     }
   }
   int total = 0;

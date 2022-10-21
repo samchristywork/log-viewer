@@ -1,7 +1,7 @@
 CC := g++
 
 CPPFLAGS := $(shell pkg-config --cflags gtk+-3.0) -Wall -Wpedantic -Werror
-LIBS := $(shell pkg-config --libs gtk+-3.0)
+LIBS := $(shell pkg-config --libs gtk+-3.0) -lboost_filesystem
 
 all: build/log_viewer
 
