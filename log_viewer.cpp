@@ -108,11 +108,16 @@ GtkTreeModel *create_and_fill_model() {
     gtk_tree_store_append(store, &filters[i].iter, NULL);
   }
 
-  boost::filesystem::directory_iterator iter{"sample_data"};
+  boost::filesystem::recursive_directory_iterator iter{"these_are_some_logs"};
 
   int i = 0;
-  while (iter != boost::filesystem::directory_iterator{}) {
-    std::string filepath = (*iter++).path().string();
+  int num_matches=0;
+  while (iter != boost::filesystem::recursive_directory_iterator{}) {
+    boost::filesystem::path path = (*iter++).path();
+    if(boost::filesystem::is_directory(path)){
+      continue;
+    }
+    std::string filepath = path.string();
     char filename[PATH_MAX];
     sprintf(filename, "%s", filepath.c_str());
     puts(filename);
