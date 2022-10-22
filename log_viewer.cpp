@@ -20,6 +20,7 @@ int message_idx = 0;
 typedef struct filter_t {
   GtkTreeIter iter;
   regex_t compiled_regex;
+  bool discard;
   int count;
   char label[256];
   char regex[1024];
@@ -71,13 +72,14 @@ void open_file() {
   gtk_widget_destroy(dialog);
 }
 
-void add_filter(const char *label, const char *regex) {
+void add_filter(const char *label, const char *regex, bool discard) {
   filters = (filter_t *)realloc(filters, (num_filters + 1) * sizeof(filter_t));
 
   strcpy(filters[num_filters].regex, regex);
   strcpy(filters[num_filters].label, label);
   regcomp(&filters[num_filters].compiled_regex, filters[num_filters].regex, REG_ICASE);
   filters[num_filters].count = 0;
+  filters[num_filters].discard = discard;
   num_filters++;
 }
 
@@ -99,11 +101,8 @@ GtkTreeModel *create_and_fill_model() {
 
   filters = (filter_t *)malloc(0);
 
-  add_filter("Tracker Miner", "tracker.miner");
-  add_filter("Pipewire", "pipewire");
-  add_filter("Errors", "error");
-  add_filter("Warnings", "warn");
-  add_filter("Uncategorized", "");
+  add_filter("Errors", "error", false);
+  add_filter("Warnings", "warn", false);
 
   for (int i = 0; i < num_filters; i++) {
     gtk_tree_store_append(store, &filters[i].iter, NULL);
@@ -163,15 +162,17 @@ GtkTreeModel *create_and_fill_model() {
       GtkTreeIter j;
       for (int i = 0; i < num_filters; i++) {
         if (regexec(&filters[i].compiled_regex, line, 0, NULL, 0) == 0) {
-          gtk_tree_store_append(store, &j, &filters[i].iter);
+          if(!filters[i].discard){
+            gtk_tree_store_append(store, &j, &filters[i].iter);
+            char number[256];
+            sprintf(number, "%d", line_no);
+            gtk_tree_store_set(store, &j, 0, "", 1, "", 2, filenames[i - 1], 3, number, 4, line, -1);
+            num_matches++;
+          }
           filters[i].count++;
           break;
         }
       }
-
-      char number[256];
-      sprintf(number, "%d", line_no);
-      gtk_tree_store_set(store, &j, 0, "", 1, "", 2, filenames[i - 1], 3, number, 4, line, -1);
     }
 
     if (line) {
