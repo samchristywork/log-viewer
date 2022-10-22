@@ -2,6 +2,7 @@
 #include <boost/filesystem.hpp>
 #include <gtk/gtk.h>
 #include <iomanip>
+#include <iostream>
 #include <regex.h>
 
 char filenames[1024][1024];
@@ -14,7 +15,6 @@ typedef struct message_t {
   int category;
   time_t timestamp;
 } message_t;
-message_t messages[10000];
 int message_idx = 0;
 
 typedef struct filter_t {
@@ -151,14 +151,14 @@ GtkTreeModel *create_and_fill_model() {
 
       time_t timestamp = mktime(&tm);
       line[strlen(line) - 1] = 0;
-      messages[message_idx].reporting_mechanism = filenames[i - 1];
-      messages[message_idx].line = line_no;
-      messages[message_idx].text = (char *)malloc(strlen(line) + 1);
-      strcpy(messages[message_idx].text, line);
-      messages[message_idx].text[strlen(line) - 1] = 0; // Removes newline
-      messages[message_idx].category = 0;
-      messages[message_idx].timestamp = timestamp;
-      message_idx++;
+      message_t message;
+      message.reporting_mechanism = filenames[i - 1];
+      message.line = line_no;
+      message.text = (char *)malloc(strlen(line) + 1);
+      strcpy(message.text, line);
+      message.text[strlen(line) - 1] = 0; // Removes newline
+      message.category = 0;
+      message.timestamp = timestamp;
       line_no++;
       GtkTreeIter j;
       for (int i = 0; i < num_filters; i++) {
