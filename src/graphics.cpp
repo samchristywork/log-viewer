@@ -1,7 +1,9 @@
 #include <gtk/gtk.h>
 #include <vector>
 
+#include "graphics.hpp"
 #include "log_viewer.hpp"
+#include "filter.hpp"
 
 GtkWidget *statusbar;
 
