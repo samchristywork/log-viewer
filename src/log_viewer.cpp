@@ -43,17 +43,17 @@ void read_logs(vector<string> filenames) {
     string line;
     int lineno = 0;
     while (getline(handler, line)) {
-      for (unsigned int i = 0; i < filters.size(); i++) {
-        if (regexec(&filters[i].compiled_regex, line.c_str(), 0, NULL, 0) == 0) {
-          filters[i].count++;
-          if (filters[i].count < 1000) {
+      for (unsigned int j = 0; j < filters.size(); j++) {
+        if (regexec(&filters[j].compiled_regex, line.c_str(), 0, NULL, 0) == 0) {
+          filters[j].count++;
+          if (filters[j].count < 1000) {
             match_t match;
             line.erase(std::remove(line.begin(), line.end(), '\n'), line.cend());
             line.erase(std::remove(line.begin(), line.end(), '\r'), line.cend());
             match.file_index = i;
             match.text = line;
             match.lineno = lineno;
-            filters[i].matches.push_back(match);
+            filters[j].matches.push_back(match);
           }
         }
       }
