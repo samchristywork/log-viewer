@@ -2,9 +2,9 @@
 #define FILTER_HPP
 
 #include <gtk/gtk.h>
-#include <string>
-#include <regex.h>
 #include <iomanip>
+#include <regex.h>
+#include <string>
 
 using namespace std;
 
@@ -28,7 +28,7 @@ typedef struct filter_t {
   vector<match_t> matches;
 } filter_t;
 
-
-vector<filter_t> read_logs(vector<string> filenames, settings_t settings);
+vector<filter_t> add_filter(vector<filter_t> filters, const char *label, const char *regex, bool discard);
+vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, settings_t settings);
 
 #endif

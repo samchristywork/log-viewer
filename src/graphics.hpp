@@ -7,6 +7,6 @@
 
 using namespace std;
 
-void graphics_main(vector<filter_t> filters, vector<string> filenames);
+void graphics_main(vector<string> filenames);
 
 #endif

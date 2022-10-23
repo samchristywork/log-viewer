@@ -1,11 +1,19 @@
 #include <gtk/gtk.h>
+#include <iostream>
 #include <vector>
 
+#include "filter.hpp"
 #include "graphics.hpp"
 #include "log_viewer.hpp"
-#include "filter.hpp"
+
+using namespace std;
+
+settings_t settings = {
+    false};
 
 GtkWidget *statusbar;
+
+vector<filter_t> filters;
 
 gboolean keypress_callback(GtkWidget *widget, GdkEventKey *event, gpointer data) {
   if (event->keyval == GDK_KEY_Escape) {
@@ -63,7 +71,8 @@ void add_data_to_model(GtkTreeModel *model, vector<filter_t> filters, vector<str
   gtk_statusbar_push(GTK_STATUSBAR(statusbar), 0, buf);
 }
 
-void graphics_main(vector<filter_t> filters, vector<string> filenames) {
+void graphics_main(vector<string> filenames) {
+
   GtkBuilder *builder = gtk_builder_new();
   gtk_builder_add_from_file(builder, "res/log_viewer.glade", NULL);
 
@@ -75,6 +84,13 @@ void graphics_main(vector<filter_t> filters, vector<string> filenames) {
   gtk_statusbar_remove_all(GTK_STATUSBAR(statusbar), 0);
   gtk_statusbar_push(GTK_STATUSBAR(statusbar), 0, buf);
   //GtkWidget *about = GTK_WIDGET(gtk_builder_get_object(builder, "about"));
+
+  vector<filter_t> filters;
+  filters = add_filter(filters, "Errors", "error", false);
+  filters = add_filter(filters, "Warnings", "warn", false);
+  filters = add_filter(filters, "Unmatched", "", false); // This should always exist
+
+  filters = read_logs(filters, filenames, settings);
 
   GtkWidget *treeview = GTK_WIDGET(gtk_builder_get_object(builder, "treeview"));
   GtkTreeModel *model = build_model(treeview);

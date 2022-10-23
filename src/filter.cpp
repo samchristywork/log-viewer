@@ -29,13 +29,8 @@ char *strptime2(const char *s, const char *format, struct tm *tm) {
   return (char *)(s + input.tellg());
 }
 
-vector<filter_t> read_logs(vector<string> filenames, settings_t settings) {
-  vector<filter_t> filters;
-
-  filters=add_filter(filters, "Errors", "error", false);
-  filters=add_filter(filters, "Warnings", "warn", false);
-
-  filters=add_filter(filters, "Unmatched", "", false); // This should always exist
+vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, settings_t settings) {
+  int limiter = 0;
   for (unsigned int i = 0; i < filenames.size(); i++) {
     cout << "Reading file: " << filenames[i] << endl;
     boost::filesystem::ifstream handler(filenames[i]);
@@ -64,7 +59,7 @@ vector<filter_t> read_logs(vector<string> filenames, settings_t settings) {
             match.lineno = lineno;
             filters[j].matches.push_back(match);
           }
-          if(!settings.filter_passthrough){
+          if (!settings.filter_passthrough) {
             break;
           }
         }
@@ -77,4 +72,3 @@ vector<filter_t> read_logs(vector<string> filenames, settings_t settings) {
   }
   return filters;
 }
-
