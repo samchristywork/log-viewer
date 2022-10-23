@@ -6,6 +6,14 @@
 #include "log_viewer.hpp"
 #include "graphics.hpp"
 
+struct settings_t {
+  bool filter_passthrough;
+};
+
+settings_t settings={
+  false
+};
+
 vector<filter_t> filters;
 
 using namespace std;
@@ -55,7 +63,9 @@ void read_logs(vector<string> filenames) {
             match.lineno = lineno;
             filters[j].matches.push_back(match);
           }
-          break;
+          if(!settings.filter_passthrough){
+            break;
+          }
         }
       }
       lineno++;
