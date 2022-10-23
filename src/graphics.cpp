@@ -19,6 +19,11 @@ GtkTreeModel *build_model(GtkWidget *view) {
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Reporting Mechanism", gtk_cell_renderer_text_new(), "text", 2, NULL);
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Line", gtk_cell_renderer_text_new(), "text", 3, NULL);
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Text", gtk_cell_renderer_text_new(), "text", 4, NULL);
+  gtk_tree_view_column_set_resizable(gtk_tree_view_get_column(GTK_TREE_VIEW(view), 0), true);
+  gtk_tree_view_column_set_resizable(gtk_tree_view_get_column(GTK_TREE_VIEW(view), 1), true);
+  gtk_tree_view_column_set_resizable(gtk_tree_view_get_column(GTK_TREE_VIEW(view), 2), true);
+  gtk_tree_view_column_set_resizable(gtk_tree_view_get_column(GTK_TREE_VIEW(view), 3), true);
+  gtk_tree_view_column_set_resizable(gtk_tree_view_get_column(GTK_TREE_VIEW(view), 4), true);
 
   GtkTreeModel *model = GTK_TREE_MODEL(gtk_tree_store_new(5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING));
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
@@ -37,7 +42,8 @@ void add_data_to_model(GtkTreeModel *model, vector<filter_t> filters, vector<str
       gtk_tree_store_append(GTK_TREE_STORE(model), &k, &filters[i].iter);
       char number[256];
       sprintf(number, "%d", filters[i].matches[j].lineno);
-      gtk_tree_store_set(GTK_TREE_STORE(model), &k, 0, "", 1, "", 2, filenames[filters[i].matches[j].file_index].c_str(), 3, number, 4, filters[i].matches[j].text.c_str(), -1);
+      string reporting_mechanism = "file://" + filenames[filters[i].matches[j].file_index];
+      gtk_tree_store_set(GTK_TREE_STORE(model), &k, 0, "", 1, "", 2, reporting_mechanism.c_str(), 3, number, 4, filters[i].matches[j].text.c_str(), -1);
     }
   }
 
