@@ -59,7 +59,7 @@ void add_data_to_model(GtkTreeModel *model, vector<filter_t> filters, vector<str
 
 void foo(vector<filter_t> filters, vector<string> filenames) {
   GtkBuilder *builder = gtk_builder_new();
-  gtk_builder_add_from_file(builder, "log_viewer.glade", NULL);
+  gtk_builder_add_from_file(builder, "res/log_viewer.glade", NULL);
 
   GtkWidget *window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
   gtk_window_set_default_size(GTK_WINDOW(window), 1000, 700);
@@ -78,7 +78,7 @@ void foo(vector<filter_t> filters, vector<string> filenames) {
 
   // CSS
   GtkCssProvider *css = gtk_css_provider_new();
-  gtk_css_provider_load_from_path(css, "style.css", NULL);
+  gtk_css_provider_load_from_path(css, "res/style.css", NULL);
   gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(css), GTK_STYLE_PROVIDER_PRIORITY_USER);
 
   gtk_builder_connect_signals(builder, NULL);
