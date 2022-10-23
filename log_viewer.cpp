@@ -1,86 +1,27 @@
-#define _XOPEN_SOURCE
 #include <boost/filesystem.hpp>
 #include <gtk/gtk.h>
 #include <iomanip>
 #include <iostream>
 #include <regex.h>
+#include <vector>
 
-char filenames[1024][1024];
-GtkWidget *statusbar;
+#include "log_viewer.hpp"
+vector<filter_t> filters;
 
-typedef struct message_t {
-  char *reporting_mechanism;
-  int line;
-  char *text;
-  int category;
-  time_t timestamp;
-} message_t;
-int message_idx = 0;
+#include "graphics.hpp"
 
-typedef struct filter_t {
-  GtkTreeIter iter;
-  regex_t compiled_regex;
-  bool discard;
-  int count;
-  char label[256];
-  char regex[1024];
-} filter_t;
-struct filter_t *filters;
-int num_filters = 0;
-
-// Event
-gboolean keyPressCallback(GtkWidget *widget, GdkEventKey *event, gpointer data) {
-  if (event->keyval == GDK_KEY_Escape) {
-    exit(EXIT_SUCCESS);
-    return TRUE;
-  }
-  return FALSE;
-}
-
-void open_file() {
-  GtkWidget *dialog = gtk_file_chooser_dialog_new("Open File",
-                                                  NULL,
-                                                  GTK_FILE_CHOOSER_ACTION_OPEN,
-                                                  "_Cancel",
-                                                  GTK_RESPONSE_CANCEL,
-                                                  "_Open",
-                                                  GTK_RESPONSE_ACCEPT,
-                                                  NULL);
-
-  gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-  if (res == GTK_RESPONSE_ACCEPT) {
-    char *filename;
-    GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
-    filename = gtk_file_chooser_get_filename(chooser);
-
-    FILE *f = fopen(filename, "rb");
-    if (f) {
-      fseek(f, 0L, SEEK_END);
-      size_t len = ftell(f);
-      rewind(f);
-
-      char *str = (char *)malloc(len + 1);
-      fread(str, 1, len, f);
-      str[len] = 0;
-      fclose(f);
-
-      puts(str);
-      free(str);
-    }
-    g_free(filename);
-  }
-  gtk_widget_destroy(dialog);
-}
+using namespace std;
 
 void add_filter(const char *label, const char *regex, bool discard) {
-  filters = (filter_t *)realloc(filters, (num_filters + 1) * sizeof(filter_t));
+  filter_t filter;
 
-  strcpy(filters[num_filters].regex, regex);
-  strcpy(filters[num_filters].label, label);
-  regcomp(&filters[num_filters].compiled_regex, filters[num_filters].regex, REG_ICASE);
-  filters[num_filters].count = 0;
-  filters[num_filters].discard = discard;
-  num_filters++;
+  filter.count=0;
+  filter.regex=regex;
+  filter.label=label;
+  regcomp(&filter.compiled_regex, filter.regex.c_str(), REG_ICASE);
+  filter.discard = discard;
+
+  filters.push_back(filter);
 }
 
 char *strptime2(const char *s, const char *format, struct tm *tm) {
@@ -93,185 +34,63 @@ char *strptime2(const char *s, const char *format, struct tm *tm) {
   return (char *)(s + input.tellg());
 }
 
-GtkTreeModel *create_and_fill_model() {
-
-  GtkTreeStore *store;
-  store = gtk_tree_store_new(5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-
-
-  filters = (filter_t *)malloc(0);
+void read_logs(vector<string> filenames) {
 
   add_filter("Errors", "error", false);
   add_filter("Warnings", "warn", false);
-
-  for (int i = 0; i < num_filters; i++) {
-    gtk_tree_store_append(store, &filters[i].iter, NULL);
+  add_filter("Unmatched", "", false);
+  for (unsigned int i=0;i<filenames.size(); i++) {
+    //strcpy(c_filename, filename.c_str());
+    cout << "Reading file: " << filenames[i] << endl;
+    boost::filesystem::ifstream handler(filenames[i]);
+    string line;
+    int lineno=0;
+    while (getline(handler, line)) {
+      for (unsigned int i = 0; i < filters.size(); i++) {
+        if (regexec(&filters[i].compiled_regex, line.c_str(), 0, NULL, 0) == 0) {
+          filters[i].count++;
+          if(filters[i].count<1000){
+            match_t match;
+            line.erase(std::remove(line.begin(), line.end(), '\n'), line.cend());
+            line.erase(std::remove(line.begin(), line.end(), '\r'), line.cend());
+            match.file_index=i;
+            match.text=line;
+            match.lineno=lineno;
+            filters[i].matches.push_back(match);
+          }
+        }
+      }
+      lineno++;
+    }
   }
+  for(filter_t filter : filters) {
+    regfree(&filter.compiled_regex);
+  }
+}
 
-  boost::filesystem::recursive_directory_iterator iter{"these_are_some_logs"};
-
-  int i = 0;
-  int num_matches=0;
+vector<string> get_filenames(string directory) {
+  vector<string> filenames;
+  boost::filesystem::recursive_directory_iterator iter{directory};
   while (iter != boost::filesystem::recursive_directory_iterator{}) {
     boost::filesystem::path path = (*iter++).path();
-    if(boost::filesystem::is_directory(path)){
+    if (boost::filesystem::is_directory(path)) {
       continue;
     }
-    std::string filepath = path.string();
-    char filename[PATH_MAX];
-    sprintf(filename, "%s", filepath.c_str());
-    puts(filename);
-    FILE *f = fopen(filename, "rb");
-    strcpy(filenames[i], filename);
-    i++;
-
-    char *line = NULL;
-    size_t len = 0;
-    ssize_t read;
-
-    int line_no = 0;
-    while ((read = getline(&line, &len, f)) != -1) {
-
-      struct tm tm;
-      while (1) {
-        char *ret;
-
-        memset(&tm, 0, sizeof(tm));
-        ret = strptime2(line, "%b %d %H:%M:%S", &tm);
-        if (ret) {
-          tm.tm_year = 122;
-          break;
-        }
-
-        memset(&tm, 0, sizeof(tm));
-        ret = strptime2(line, "%a %d %b %Y %H:%M:%S", &tm);
-        if (ret) {
-          break;
-        }
-
-        printf("Timestamp not handled: %s", line);
-        break;
-      }
-
-      time_t timestamp = mktime(&tm);
-      line[strlen(line) - 1] = 0;
-      message_t message;
-      message.reporting_mechanism = filenames[i - 1];
-      message.line = line_no;
-      message.text = (char *)malloc(strlen(line) + 1);
-      strcpy(message.text, line);
-      message.text[strlen(line) - 1] = 0; // Removes newline
-      message.category = 0;
-      message.timestamp = timestamp;
-      line_no++;
-      GtkTreeIter j;
-      for (int i = 0; i < num_filters; i++) {
-        if (regexec(&filters[i].compiled_regex, line, 0, NULL, 0) == 0) {
-          if(!filters[i].discard){
-            gtk_tree_store_append(store, &j, &filters[i].iter);
-            char number[256];
-            sprintf(number, "%d", line_no);
-            gtk_tree_store_set(store, &j, 0, "", 1, "", 2, filenames[i - 1], 3, number, 4, line, -1);
-            num_matches++;
-          }
-          filters[i].count++;
-          break;
-        }
-      }
-    }
-
-    if (line) {
-      free(line);
-    }
-
-    if (f) {
-      fclose(f);
-    }
+    filenames.push_back(path.string());
   }
-  int total = 0;
-  char buf[256];
-  for (int i = 0; i < num_filters; i++) {
-    total += filters[i].count;
-    sprintf(buf, "%d", filters[i].count);
-    gtk_tree_store_set(store, &filters[i].iter, 0, filters[i].label, 1, buf, 2, "", 3, "", -1);
-  }
-
-  sprintf(buf, "%d messages tracked.", total);
-  gtk_statusbar_remove_all(GTK_STATUSBAR(statusbar), 0);
-  gtk_statusbar_push(GTK_STATUSBAR(statusbar), 0, buf);
-
-  return GTK_TREE_MODEL(store);
+  return filenames;
 }
 
-GtkWidget *create_view_and_model(GtkWidget *view) {
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Category", gtk_cell_renderer_text_new(), "text", 0, NULL);
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Amount", gtk_cell_renderer_text_new(), "text", 1, NULL);
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Reporting Mechanism", gtk_cell_renderer_text_new(), "text", 2, NULL);
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Line", gtk_cell_renderer_text_new(), "text", 3, NULL);
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Text", gtk_cell_renderer_text_new(), "text", 4, NULL);
-
-  GtkTreeModel *model = create_and_fill_model();
-  gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
-  g_object_unref(model);
-
-  return view;
-}
-
-
-void show_about() {
-  GdkPixbuf *pbuf = gdk_pixbuf_new_from_file("image.png", NULL);
-  const char *authors[] = {
-      "Sam Christy",
-      NULL};
-  gtk_show_about_dialog(NULL,
-                        "authors", authors,
-                        "comments", "\"There are two ways of constructing a software design: One way is to make it so simple that there are obviously no deficiencies, and the other way is to make it so complicated that there are no obvious deficiencies. The first method is far more difficult.\" - C. A. R. Hoare",
-                        "copyright", "©2022 Sam Christy",
-                        "license", "GNU General Public License version 3 (GPLv3)",
-                        "license-type", GTK_LICENSE_GPL_3_0,
-                        "logo", pbuf,
-                        "program-name", "Log Viewer",
-                        "title", "About Log Viewer",
-                        "version", "v1.0.0",
-                        "website", "https://github.com/samchristywork",
-                        "website-label", "github.com/samchristywork",
-                        NULL);
+void present_logs(){
+  for (filter_t filter : filters) {
+    cout << filter.label << " " << filter.count << endl;
+  }
 }
 
 int main(int argc, char *argv[]) {
-
   gtk_init(&argc, &argv);
-
-  GtkBuilder *builder = gtk_builder_new();
-  gtk_builder_add_from_file(builder, "log_viewer.glade", NULL);
-
-  GtkWidget *window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
-  gtk_window_set_default_size(GTK_WINDOW(window), 1000, 700);
-
-  statusbar = GTK_WIDGET(gtk_builder_get_object(builder, "statusbar"));
-  GtkWidget *about = GTK_WIDGET(gtk_builder_get_object(builder, "about"));
-
-  GtkWidget *treeview = GTK_WIDGET(gtk_builder_get_object(builder, "treeview"));
-  create_view_and_model(treeview);
-
-  GtkWidget *quit = GTK_WIDGET(gtk_builder_get_object(builder, "quit"));
-
-  // CSS
-  GtkCssProvider *css = gtk_css_provider_new();
-  gtk_css_provider_load_from_path(css, "style.css", NULL);
-  gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(css), GTK_STYLE_PROVIDER_PRIORITY_USER);
-
-  gtk_builder_connect_signals(builder, NULL);
-
-  // Events
-  gtk_widget_add_events(window, GDK_KEY_PRESS_MASK);
-  g_signal_connect(G_OBJECT(quit), "activate", G_CALLBACK(gtk_main_quit), NULL);
-  g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
-  g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(keyPressCallback), NULL);
-  g_signal_connect(G_OBJECT(about), "activate", G_CALLBACK(show_about), NULL);
-
-  g_object_unref(builder);
-
-  gtk_widget_show_all(window);
-  gtk_main();
+  vector<string> filenames = get_filenames("data");
+  read_logs(filenames);
+  present_logs();
+  foo(filters, filenames);
 }
