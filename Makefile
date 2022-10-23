@@ -9,9 +9,13 @@ build/graphics.o: src/graphics.cpp src/graphics.hpp
 	mkdir -p build/
 	${CC} ${CPPFLAGS} src/graphics.cpp -c -o $@ ${LIBS}
 
-build/log_viewer: src/log_viewer.cpp src/log_viewer.hpp build/graphics.o
+build/filter.o: src/filter.cpp src/filter.hpp
 	mkdir -p build/
-	${CC} ${CPPFLAGS} src/log_viewer.cpp build/graphics.o -o $@ ${LIBS}
+	${CC} ${CPPFLAGS} src/filter.cpp -c -o $@ ${LIBS}
+
+build/log_viewer: src/log_viewer.cpp src/log_viewer.hpp build/graphics.o build/filter.o
+	mkdir -p build/
+	${CC} ${CPPFLAGS} src/log_viewer.cpp build/graphics.o build/filter.o -o $@ ${LIBS}
 
 clean:
 	rm -rf build/

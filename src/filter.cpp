@@ -44,6 +44,16 @@ vector<filter_t> read_logs(vector<string> filenames, settings_t settings) {
     while (getline(handler, line)) {
       for (unsigned int j = 0; j < filters.size(); j++) {
         if (regexec(&filters[j].compiled_regex, line.c_str(), 0, NULL, 0) == 0) {
+
+          /*
+           * NOTE: I cull messages here in order to save memory. This has the
+           * down-side that for some operations (sort, adding/removing filters,
+           * changing the time window) the log files have to be re-ingested.
+           *
+           * I could alternatively cull elsewhere, but only at the cost of
+           * finding a way to store (potentially) several gigabytes of log
+           * files, which I don't want to do if I can help it.
+           */
           filters[j].count++;
           if (filters[j].count < 1000) {
             match_t match;
