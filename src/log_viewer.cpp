@@ -2,22 +2,20 @@
 #include <gtk/gtk.h>
 #include <iomanip>
 #include <iostream>
-#include <regex.h>
-#include <vector>
 
 #include "log_viewer.hpp"
-vector<filter_t> filters;
-
 #include "graphics.hpp"
+
+vector<filter_t> filters;
 
 using namespace std;
 
 void add_filter(const char *label, const char *regex, bool discard) {
   filter_t filter;
 
-  filter.count=0;
-  filter.regex=regex;
-  filter.label=label;
+  filter.count = 0;
+  filter.regex = regex;
+  filter.label = label;
   regcomp(&filter.compiled_regex, filter.regex.c_str(), REG_ICASE);
   filter.discard = discard;
 
@@ -39,23 +37,23 @@ void read_logs(vector<string> filenames) {
   add_filter("Errors", "error", false);
   add_filter("Warnings", "warn", false);
   add_filter("Unmatched", "", false);
-  for (unsigned int i=0;i<filenames.size(); i++) {
+  for (unsigned int i = 0; i < filenames.size(); i++) {
     //strcpy(c_filename, filename.c_str());
     cout << "Reading file: " << filenames[i] << endl;
     boost::filesystem::ifstream handler(filenames[i]);
     string line;
-    int lineno=0;
+    int lineno = 0;
     while (getline(handler, line)) {
       for (unsigned int i = 0; i < filters.size(); i++) {
         if (regexec(&filters[i].compiled_regex, line.c_str(), 0, NULL, 0) == 0) {
           filters[i].count++;
-          if(filters[i].count<1000){
+          if (filters[i].count < 1000) {
             match_t match;
             line.erase(std::remove(line.begin(), line.end(), '\n'), line.cend());
             line.erase(std::remove(line.begin(), line.end(), '\r'), line.cend());
-            match.file_index=i;
-            match.text=line;
-            match.lineno=lineno;
+            match.file_index = i;
+            match.text = line;
+            match.lineno = lineno;
             filters[i].matches.push_back(match);
           }
         }
@@ -63,7 +61,7 @@ void read_logs(vector<string> filenames) {
       lineno++;
     }
   }
-  for(filter_t filter : filters) {
+  for (filter_t filter : filters) {
     regfree(&filter.compiled_regex);
   }
 }
@@ -81,7 +79,7 @@ vector<string> get_filenames(string directory) {
   return filenames;
 }
 
-void present_logs(){
+void present_logs() {
   for (filter_t filter : filters) {
     cout << filter.label << " " << filter.count << endl;
   }
@@ -92,5 +90,5 @@ int main(int argc, char *argv[]) {
   vector<string> filenames = get_filenames("data");
   read_logs(filenames);
   present_logs();
-  foo(filters, filenames);
+  graphics_main(filters, filenames);
 }

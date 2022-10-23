@@ -1,5 +1,4 @@
 #include <gtk/gtk.h>
-#include <iostream>
 #include <vector>
 
 #include "log_viewer.hpp"
@@ -27,14 +26,14 @@ GtkTreeModel *build_model(GtkWidget *view) {
   return model;
 }
 
-void add_data_to_model(GtkTreeModel *model, vector<filter_t> filters, vector<string>filenames) {
+void add_data_to_model(GtkTreeModel *model, vector<filter_t> filters, vector<string> filenames) {
   for (unsigned int i = 0; i < filters.size(); i++) {
     gtk_tree_store_append(GTK_TREE_STORE(model), &(filters[i].iter), NULL);
   }
 
   for (unsigned int i = 0; i < filters.size(); i++) {
     GtkTreeIter k;
-    for (unsigned int j=0;j<filters[i].matches.size();j++) {
+    for (unsigned int j = 0; j < filters[i].matches.size(); j++) {
       gtk_tree_store_append(GTK_TREE_STORE(model), &k, &filters[i].iter);
       char number[256];
       sprintf(number, "%d", filters[i].matches[j].lineno);
@@ -43,9 +42,9 @@ void add_data_to_model(GtkTreeModel *model, vector<filter_t> filters, vector<str
     }
   }
 
-  int total=0;
+  int total = 0;
   for (unsigned int i = 0; i < filters.size(); i++) {
-    total+=filters[i].count;
+    total += filters[i].count;
     char buf[256];
     sprintf(buf, "%lu", filters[i].count);
     gtk_tree_store_set(GTK_TREE_STORE(model), &(filters[i].iter), 0, filters[i].label.c_str(), 1, buf, 2, "", 3, "", -1);
@@ -57,7 +56,7 @@ void add_data_to_model(GtkTreeModel *model, vector<filter_t> filters, vector<str
   gtk_statusbar_push(GTK_STATUSBAR(statusbar), 0, buf);
 }
 
-void foo(vector<filter_t> filters, vector<string> filenames) {
+void graphics_main(vector<filter_t> filters, vector<string> filenames) {
   GtkBuilder *builder = gtk_builder_new();
   gtk_builder_add_from_file(builder, "res/log_viewer.glade", NULL);
 
