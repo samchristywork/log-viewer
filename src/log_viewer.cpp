@@ -55,6 +55,7 @@ void read_logs(vector<string> filenames) {
             match.lineno = lineno;
             filters[j].matches.push_back(match);
           }
+          break;
         }
       }
       lineno++;
