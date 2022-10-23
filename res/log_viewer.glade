@@ -5,18 +5,26 @@
   <object class="GtkImage" id="image1">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="stock">gtk-apply</property>
+    <property name="tooltip-text" translatable="yes">Add Filter</property>
+    <property name="pixbuf">add.svg</property>
   </object>
   <object class="GtkImage" id="image2">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="stock">gtk-add</property>
+    <property name="tooltip-text" translatable="yes">Delete Filter</property>
+    <property name="pixbuf">delete.svg</property>
   </object>
   <object class="GtkImage" id="image3">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="tooltip-text" translatable="yes">Date Range</property>
     <property name="pixbuf">date.svg</property>
+  </object>
+  <object class="GtkImage" id="image4">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="tooltip-text" translatable="yes">Refresh</property>
+    <property name="pixbuf">refresh.svg</property>
   </object>
   <object class="GtkWindow" id="window">
     <property name="can-focus">False</property>
@@ -226,7 +234,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="refresh">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
@@ -311,11 +319,5 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkImage" id="image4">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="tooltip-text" translatable="yes">Date Range</property>
-    <property name="stock">gtk-refresh</property>
   </object>
 </interface>
