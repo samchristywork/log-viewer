@@ -38,7 +38,6 @@ void read_logs(vector<string> filenames) {
   add_filter("Warnings", "warn", false);
   add_filter("Unmatched", "", false);
   for (unsigned int i = 0; i < filenames.size(); i++) {
-    //strcpy(c_filename, filename.c_str());
     cout << "Reading file: " << filenames[i] << endl;
     boost::filesystem::ifstream handler(filenames[i]);
     string line;

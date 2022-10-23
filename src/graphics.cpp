@@ -38,7 +38,6 @@ void add_data_to_model(GtkTreeModel *model, vector<filter_t> filters, vector<str
       char number[256];
       sprintf(number, "%d", filters[i].matches[j].lineno);
       gtk_tree_store_set(GTK_TREE_STORE(model), &k, 0, "", 1, "", 2, filenames[filters[i].matches[j].file_index].c_str(), 3, number, 4, filters[i].matches[j].text.c_str(), -1);
-      //gtk_tree_store_set(GTK_TREE_STORE(model), &k, 0, "", 1, "", 2, "Filename", 3, number, 4, filters[i].matches[j].text.c_str(), -1);
     }
   }
 
@@ -75,21 +74,19 @@ void graphics_main(vector<filter_t> filters, vector<string> filenames) {
 
   GtkWidget *quit = GTK_WIDGET(gtk_builder_get_object(builder, "quit"));
 
-  // CSS
   GtkCssProvider *css = gtk_css_provider_new();
   gtk_css_provider_load_from_path(css, "res/style.css", NULL);
   gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(css), GTK_STYLE_PROVIDER_PRIORITY_USER);
 
   gtk_builder_connect_signals(builder, NULL);
 
-  // Events
   gtk_widget_add_events(window, GDK_KEY_PRESS_MASK);
-  //g_signal_connect(G_OBJECT(open), "activate", G_CALLBACK(open_file), NULL);
   g_signal_connect(G_OBJECT(quit), "activate", G_CALLBACK(gtk_main_quit), NULL);
-  //g_signal_connect(G_OBJECT(treeview), "cursor-changed", G_CALLBACK(foo), NULL);
   g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(keypress_callback), NULL);
   //g_signal_connect(G_OBJECT(about), "activate", G_CALLBACK(show_about), NULL);
+  //g_signal_connect(G_OBJECT(open), "activate", G_CALLBACK(open_file), NULL);
+  //g_signal_connect(G_OBJECT(treeview), "cursor-changed", G_CALLBACK(foo), NULL);
 
   g_object_unref(builder);
 
