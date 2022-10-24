@@ -22,6 +22,7 @@ typedef struct filter_t {
   GtkTreeIter iter;
   bool discard;
   bool isregex;
+  bool sample;
   vector<regex_t> compiled_regexes;
   string label;
   vector<string> patterns;
@@ -29,7 +30,7 @@ typedef struct filter_t {
   vector<match_t> matches;
 } filter_t;
 
-vector<filter_t> add_filter(vector<filter_t> filters, const char *label, vector<string> patterns, bool isregex, bool discard);
+vector<filter_t> add_filter(vector<filter_t> filters, const char *label, vector<string> patterns, bool isregex, bool discard, bool sample);
 vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, settings_t settings);
 
 #endif

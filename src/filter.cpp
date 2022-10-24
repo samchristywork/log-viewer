@@ -6,13 +6,14 @@
 
 using namespace std;
 
-vector<filter_t> add_filter(vector<filter_t> filters, const char *label, vector<string> patterns, bool isregex, bool discard) {
+vector<filter_t> add_filter(vector<filter_t> filters, const char *label, vector<string> patterns, bool isregex, bool discard, bool sample) {
   filter_t filter;
 
   filter.count = 0;
   filter.label = label;
-  filter.patterns=patterns;
-  filter.isregex=false;
+  filter.patterns = patterns;
+  filter.sample = sample;
+  filter.isregex = false;
 
   filter.discard = discard;
 
@@ -31,6 +32,7 @@ char *strptime2(const char *s, const char *format, struct tm *tm) {
 }
 
 vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, settings_t settings) {
+  FILE *f = fopen("ERRORS", "wb"); // REMOVE ME
   for (unsigned int i = 0; i < filenames.size(); i++) {
     cout << "Reading file: " << filenames[i] << endl;
     boost::filesystem::ifstream handler(filenames[i]);
@@ -38,21 +40,21 @@ vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, s
     int lineno = 0;
     while (getline(handler, line)) {
       for (unsigned int j = 0; j < filters.size(); j++) {
-        bool match=false;
+        bool match = false;
         if (!filters[j].isregex) {
-          bool allmatch=true;
-          for(unsigned int k=0;k<filters[j].patterns.size();k++){
-            if(strcasestr(line.c_str(), filters[j].patterns[k].c_str()) == 0){
-              allmatch=false;
+          bool allmatch = true;
+          for (unsigned int k = 0; k < filters[j].patterns.size(); k++) {
+            if (strcasestr(line.c_str(), filters[j].patterns[k].c_str()) == 0) {
+              allmatch = false;
               break;
             }
           }
-          if(allmatch){
-            match=true;
+          if (allmatch) {
+            match = true;
           }
         }
 
-        if(match){
+        if (match) {
           /*
            * NOTE: I cull messages here in order to save memory. This has the
            * down-side that for some operations (sort, adding/removing filters,
@@ -62,6 +64,13 @@ vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, s
            * finding a way to store (potentially) several gigabytes of log
            * files, which I don't want to do if I can help it.
            */
+          if (filters[j].sample) {
+            if (random() % 1000 == 0) {
+              if (strcasestr(line.c_str(), "error") != 0) {
+                fprintf(f, "%s\n", line.c_str());
+              }
+            }
+          }
           filters[j].count++;
           if (filters[j].count < 1000) {
             match_t match;

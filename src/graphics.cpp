@@ -73,20 +73,20 @@ void add_data_to_model(GtkTreeModel *model, vector<filter_t> filters, vector<str
 }
 
 cJSON *read_json() {
-  FILE *f=fopen("filters.json", "rb");
-  if(!f){
+  FILE *f = fopen("filters.json", "rb");
+  if (!f) {
     perror("fopen");
     exit(EXIT_FAILURE);
   }
 
   fseek(f, 0, SEEK_END);
-  int size=ftell(f);
+  int size = ftell(f);
   rewind(f);
 
-  char *buffer = (char *) malloc(size+1);
-  buffer[size]=0;
-  int ret=fread(buffer, 1, size, f);
-  if(ret!=size){
+  char *buffer = (char *)malloc(size + 1);
+  buffer[size] = 0;
+  int ret = fread(buffer, 1, size, f);
+  if (ret != size) {
     fprintf(stderr, "Could not read the expected number of bytes.\n");
     exit(EXIT_FAILURE);
   }
@@ -140,27 +140,28 @@ void graphics_main(vector<string> filenames) {
   //GtkWidget *about = GTK_WIDGET(gtk_builder_get_object(builder, "about"));
 
   vector<filter_t> filters;
+
   cJSON *cjson = read_json();
   cJSON *cjson_filter = find(cjson, "filters");
-  cJSON *node=cjson_filter->child;
-  while(1){
+  cJSON *node = cjson_filter->child;
+  while (1) {
     vector<string> s;
-    if(!node){
+    if (!node) {
       break;
     }
-    cJSON *label=find(node, "label");
-    puts(label->valuestring);
-    cJSON *patterns=find(node, "patterns");
-    cJSON *pattern=patterns->child;
-    while(1){
-      if(!pattern){
+    cJSON *label = find(node, "label");
+    cJSON *sample = find(node, "sample");
+    cJSON *patterns = find(node, "patterns");
+    cJSON *pattern = patterns->child;
+    while (1) {
+      if (!pattern) {
         break;
       }
-        s.push_back(pattern->valuestring);
-      pattern=pattern->next;
+      s.push_back(pattern->valuestring);
+      pattern = pattern->next;
     }
-    filters = add_filter(filters, label->valuestring, s, false, false);
-    node=node->next;
+    filters = add_filter(filters, label->valuestring, s, false, false, cJSON_IsTrue(sample));
+    node = node->next;
   }
 
   filters = read_logs(filters, filenames, settings);

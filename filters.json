@@ -1,6 +1,6 @@
 {
   "filters": [
-    { "label": "Error", "patterns": ["error"], "isregex": false, "casesensitive": false },
+    { "label": "Error", "patterns": ["error"], "isregex": false, "casesensitive": false, "sample": true },
     { "label": "Unmatched", "patterns": [""], "isregex": false, "casesensitive": false }
   ]
 }
