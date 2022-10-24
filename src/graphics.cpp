@@ -72,6 +72,26 @@ void add_data_to_model(GtkTreeModel *model, vector<filter_t> filters, vector<str
   gtk_statusbar_push(GTK_STATUSBAR(statusbar), 0, buf);
 }
 
+void show_about() {
+  GdkPixbuf *pbuf = gdk_pixbuf_new_from_file("image.png", NULL);
+  const char *authors[] = {
+      "Sam Christy",
+      NULL};
+  gtk_show_about_dialog(NULL,
+                        "authors", authors,
+                        "comments", "\"There are two ways of constructing a software design: One way is to make it so simple that there are obviously no deficiencies, and the other way is to make it so complicated that there are no obvious deficiencies. The first method is far more difficult.\" - C. A. R. Hoare",
+                        "copyright", "©2022 Sam Christy",
+                        "license", "GNU General Public License version 3 (GPLv3)",
+                        "license-type", GTK_LICENSE_GPL_3_0,
+                        "logo", pbuf,
+                        "program-name", "Log Viewer",
+                        "title", "About Log Viewer",
+                        "version", "v1.0.0",
+                        "website", "https://github.com/samchristywork",
+                        "website-label", "github.com/samchristywork",
+                        NULL);
+}
+
 cJSON *read_json() {
   FILE *f = fopen("filters.json", "rb");
   if (!f) {
@@ -137,7 +157,7 @@ void graphics_main(vector<string> filenames) {
   statusbar = GTK_WIDGET(gtk_builder_get_object(builder, "statusbar"));
   gtk_statusbar_remove_all(GTK_STATUSBAR(statusbar), 0);
   gtk_statusbar_push(GTK_STATUSBAR(statusbar), 0, buf);
-  //GtkWidget *about = GTK_WIDGET(gtk_builder_get_object(builder, "about"));
+  GtkWidget *about = GTK_WIDGET(gtk_builder_get_object(builder, "about"));
 
   vector<filter_t> filters;
 
@@ -179,10 +199,10 @@ void graphics_main(vector<string> filenames) {
   gtk_builder_connect_signals(builder, NULL);
 
   gtk_widget_add_events(window, GDK_KEY_PRESS_MASK);
+  g_signal_connect(G_OBJECT(about), "activate", G_CALLBACK(show_about), NULL);
   g_signal_connect(G_OBJECT(quit), "activate", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(keypress_callback), NULL);
-  //g_signal_connect(G_OBJECT(about), "activate", G_CALLBACK(show_about), NULL);
   //g_signal_connect(G_OBJECT(open), "activate", G_CALLBACK(open_file), NULL);
   //g_signal_connect(G_OBJECT(treeview), "cursor-changed", G_CALLBACK(foo), NULL);
 
