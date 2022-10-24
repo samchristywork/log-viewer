@@ -6,13 +6,14 @@
 
 using namespace std;
 
-vector<filter_t> add_filter(vector<filter_t> filters, const char *label, const char *regex, bool discard) {
+vector<filter_t> add_filter(vector<filter_t> filters, const char *label, vector<string> patterns, bool isregex, bool discard) {
   filter_t filter;
 
   filter.count = 0;
-  filter.regex = regex;
   filter.label = label;
-  regcomp(&filter.compiled_regex, filter.regex.c_str(), REG_ICASE);
+  filter.patterns=patterns;
+  filter.isregex=false;
+
   filter.discard = discard;
 
   filters.push_back(filter);
@@ -30,7 +31,6 @@ char *strptime2(const char *s, const char *format, struct tm *tm) {
 }
 
 vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, settings_t settings) {
-  int limiter = 0;
   for (unsigned int i = 0; i < filenames.size(); i++) {
     cout << "Reading file: " << filenames[i] << endl;
     boost::filesystem::ifstream handler(filenames[i]);
@@ -38,8 +38,21 @@ vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, s
     int lineno = 0;
     while (getline(handler, line)) {
       for (unsigned int j = 0; j < filters.size(); j++) {
-        if (regexec(&filters[j].compiled_regex, line.c_str(), 0, NULL, 0) == 0) {
+        bool match=false;
+        if (!filters[j].isregex) {
+          bool allmatch=true;
+          for(unsigned int k=0;k<filters[j].patterns.size();k++){
+            if(strcasestr(line.c_str(), filters[j].patterns[k].c_str()) == 0){
+              allmatch=false;
+              break;
+            }
+          }
+          if(allmatch){
+            match=true;
+          }
+        }
 
+        if(match){
           /*
            * NOTE: I cull messages here in order to save memory. This has the
            * down-side that for some operations (sort, adding/removing filters,
@@ -68,7 +81,9 @@ vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, s
     }
   }
   for (filter_t filter : filters) {
-    regfree(&filter.compiled_regex);
+    //if(filter.isregex){
+    //  regfree(&filter.compiled_regex);
+    //}
   }
   return filters;
 }

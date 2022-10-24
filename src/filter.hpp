@@ -21,14 +21,15 @@ typedef struct match_t {
 typedef struct filter_t {
   GtkTreeIter iter;
   bool discard;
-  regex_t compiled_regex;
+  bool isregex;
+  vector<regex_t> compiled_regexes;
   string label;
-  string regex;
+  vector<string> patterns;
   unsigned long count;
   vector<match_t> matches;
 } filter_t;
 
-vector<filter_t> add_filter(vector<filter_t> filters, const char *label, const char *regex, bool discard);
+vector<filter_t> add_filter(vector<filter_t> filters, const char *label, vector<string> patterns, bool isregex, bool discard);
 vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, settings_t settings);
 
 #endif

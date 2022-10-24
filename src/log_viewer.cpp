@@ -22,16 +22,9 @@ vector<string> get_filenames(string directory) {
   return filenames;
 }
 
-void present_logs(vector<filter_t> filters) {
-  for (filter_t filter : filters) {
-    cout << filter.label << " " << filter.count << endl;
-  }
-}
-
 int main(int argc, char *argv[]) {
   gtk_init(&argc, &argv);
   vector<string> filenames = get_filenames("data");
 
-  //present_logs();
   graphics_main(filenames);
 }

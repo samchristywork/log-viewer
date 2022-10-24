@@ -1,3 +1,4 @@
+#include <cjson/cJSON.h>
 #include <gtk/gtk.h>
 #include <iostream>
 #include <vector>
@@ -71,6 +72,59 @@ void add_data_to_model(GtkTreeModel *model, vector<filter_t> filters, vector<str
   gtk_statusbar_push(GTK_STATUSBAR(statusbar), 0, buf);
 }
 
+cJSON *read_json() {
+  FILE *f=fopen("filters.json", "rb");
+  if(!f){
+    perror("fopen");
+    exit(EXIT_FAILURE);
+  }
+
+  fseek(f, 0, SEEK_END);
+  int size=ftell(f);
+  rewind(f);
+
+  char *buffer = (char *) malloc(size+1);
+  buffer[size]=0;
+  int ret=fread(buffer, 1, size, f);
+  if(ret!=size){
+    fprintf(stderr, "Could not read the expected number of bytes.\n");
+    exit(EXIT_FAILURE);
+  }
+
+  fclose(f);
+
+  cJSON *cjson = cJSON_Parse(buffer);
+  if (!cjson) {
+    const char *error_ptr = cJSON_GetErrorPtr();
+    if (error_ptr) {
+      fprintf(stderr, "Error before: %s\n", error_ptr);
+    }
+    cJSON_Delete(cjson);
+    exit(EXIT_FAILURE);
+  }
+  free(buffer);
+
+  return cjson;
+}
+
+cJSON *find(cJSON *tree, const char *str) {
+  cJSON *node = NULL;
+
+  if (tree) {
+    node = tree->child;
+    while (1) {
+      if (!node) {
+        break;
+      }
+      if (strcmp(str, node->string) == 0) {
+        break;
+      }
+      node = node->next;
+    }
+  }
+  return node;
+}
+
 void graphics_main(vector<string> filenames) {
 
   GtkBuilder *builder = gtk_builder_new();
@@ -86,9 +140,28 @@ void graphics_main(vector<string> filenames) {
   //GtkWidget *about = GTK_WIDGET(gtk_builder_get_object(builder, "about"));
 
   vector<filter_t> filters;
-  filters = add_filter(filters, "Errors", "error", false);
-  filters = add_filter(filters, "Warnings", "warn", false);
-  filters = add_filter(filters, "Unmatched", "", false); // This should always exist
+  cJSON *cjson = read_json();
+  cJSON *cjson_filter = find(cjson, "filters");
+  cJSON *node=cjson_filter->child;
+  while(1){
+    vector<string> s;
+    if(!node){
+      break;
+    }
+    cJSON *label=find(node, "label");
+    puts(label->valuestring);
+    cJSON *patterns=find(node, "patterns");
+    cJSON *pattern=patterns->child;
+    while(1){
+      if(!pattern){
+        break;
+      }
+        s.push_back(pattern->valuestring);
+      pattern=pattern->next;
+    }
+    filters = add_filter(filters, label->valuestring, s, false, false);
+    node=node->next;
+  }
 
   filters = read_logs(filters, filenames, settings);
 
