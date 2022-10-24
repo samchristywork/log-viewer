@@ -13,8 +13,10 @@ settings_t settings = {
     false};
 
 GtkWidget *statusbar;
+GtkTreeModel *model;
 
-vector<filter_t> filters;
+vector<filter_t> refresh_filters;
+vector<string> refresh_filenames;
 
 gboolean keypress_callback(GtkWidget *widget, GdkEventKey *event, gpointer data) {
   if (event->keyval == GDK_KEY_Escape) {
@@ -70,6 +72,15 @@ void add_data_to_model(GtkTreeModel *model, vector<filter_t> filters, vector<str
   sprintf(buf, "%d messages tracked.", total);
   gtk_statusbar_remove_all(GTK_STATUSBAR(statusbar), 0);
   gtk_statusbar_push(GTK_STATUSBAR(statusbar), 0, buf);
+}
+
+void refresh(){
+  gtk_tree_store_clear(GTK_TREE_STORE(model));
+  add_data_to_model(model, refresh_filters, refresh_filenames);
+}
+
+void refresh_callback() {
+  refresh();
 }
 
 void show_about() {
@@ -187,10 +198,14 @@ void graphics_main(vector<string> filenames) {
   filters = read_logs(filters, filenames, settings);
 
   GtkWidget *treeview = GTK_WIDGET(gtk_builder_get_object(builder, "treeview"));
-  GtkTreeModel *model = build_model(treeview);
-  add_data_to_model(model, filters, filenames);
+  model = build_model(treeview);
+
+  refresh_filters=filters;
+  refresh_filenames=filenames;
+  refresh();
 
   GtkWidget *quit = GTK_WIDGET(gtk_builder_get_object(builder, "quit"));
+  GtkWidget *refresh = GTK_WIDGET(gtk_builder_get_object(builder, "refresh"));
 
   GtkCssProvider *css = gtk_css_provider_new();
   gtk_css_provider_load_from_path(css, "res/style.css", NULL);
@@ -201,6 +216,7 @@ void graphics_main(vector<string> filenames) {
   gtk_widget_add_events(window, GDK_KEY_PRESS_MASK);
   g_signal_connect(G_OBJECT(about), "activate", G_CALLBACK(show_about), NULL);
   g_signal_connect(G_OBJECT(quit), "activate", G_CALLBACK(gtk_main_quit), NULL);
+  g_signal_connect(G_OBJECT(refresh), "clicked", G_CALLBACK(refresh_callback), NULL);
   g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(keypress_callback), NULL);
   //g_signal_connect(G_OBJECT(open), "activate", G_CALLBACK(open_file), NULL);
