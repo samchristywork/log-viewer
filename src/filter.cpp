@@ -1,5 +1,6 @@
 #include <boost/filesystem.hpp>
 #include <iostream>
+#include <map>
 #include <vector>
 
 #include "filter.hpp"
@@ -32,6 +33,11 @@ char *strptime2(const char *s, const char *format, struct tm *tm) {
 }
 
 vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, settings_t settings) {
+
+  ofstream o;
+  o.open("histogram");
+  map<string, int> map;
+
   for (unsigned int i = 0; i < filters.size(); i++) {
     filters[i].count = 0;
     filters[i].matches.clear();
@@ -69,9 +75,19 @@ vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, s
            * files, which I don't want to do if I can help it.
            */
           if (filters[j].sample) {
-            if (random() % 1000 == 0) {
+            if (random() % 10 == 0) {
               if (strcasestr(line.c_str(), "error") != 0) {
                 fprintf(f, "%s\n", line.c_str());
+
+                string token;
+                stringstream stream(line);
+                while(getline(stream, token, ' ')) {
+                  if (map.find(token) != map.end()) {
+                    map.at(token)++;
+                  } else {
+                    map.insert(pair<string, int>(token, 1));
+                  }
+                }
               }
             }
           }
@@ -93,6 +109,10 @@ vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, s
       lineno++;
     }
   }
+  for ( const auto &pair : map ) {
+    o << map.at(pair.first) << "\t" << pair.first << "\n";
+  }
+  o.close();
   for (filter_t filter : filters) {
     //if(filter.isregex){
     //  regfree(&filter.compiled_regex);
