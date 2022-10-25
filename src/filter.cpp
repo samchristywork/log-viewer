@@ -33,7 +33,7 @@ char *strptime2(const char *s, const char *format, struct tm *tm) {
 
 vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, settings_t settings) {
   for (unsigned int i = 0; i < filters.size(); i++) {
-    filters[i].count=0;
+    filters[i].count = 0;
     filters[i].matches.clear();
   }
   FILE *f = fopen("ERRORS", "wb"); // REMOVE ME
@@ -45,7 +45,7 @@ vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, s
     while (getline(handler, line)) {
       for (unsigned int j = 0; j < filters.size(); j++) {
         bool match = false;
-        if (filters[j].pattern_type==PATTERN_BASIC) {
+        if (filters[j].pattern_type == PATTERN_BASIC) {
           bool allmatch = true;
           for (unsigned int k = 0; k < filters[j].patterns.size(); k++) {
             if (strcasestr(line.c_str(), filters[j].patterns[k].c_str()) == 0) {

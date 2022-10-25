@@ -76,7 +76,7 @@ void add_data_to_model(GtkTreeModel *model, vector<filter_t> filters, vector<str
   gtk_statusbar_push(GTK_STATUSBAR(statusbar), 0, buf);
 }
 
-void refresh(){
+void refresh() {
   refresh_filters = read_logs(refresh_filters, refresh_filenames, refresh_settings);
   gtk_tree_store_clear(GTK_TREE_STORE(model));
   add_data_to_model(model, refresh_filters, refresh_filenames);
@@ -86,7 +86,7 @@ void refresh_callback() {
   refresh();
 }
 
-void add_filter_callback(){
+void add_filter_callback() {
   vector<string> s;
   s.push_back("warn");
   refresh_filters = add_filter(refresh_filters, "Label", s, PATTERN_BASIC, false, false);
@@ -208,8 +208,8 @@ void graphics_main(vector<string> filenames) {
   GtkWidget *treeview = GTK_WIDGET(gtk_builder_get_object(builder, "treeview"));
   model = build_model(treeview);
 
-  refresh_filters=filters;
-  refresh_filenames=filenames;
+  refresh_filters = filters;
+  refresh_filenames = filenames;
   refresh();
 
   GtkWidget *quit = GTK_WIDGET(gtk_builder_get_object(builder, "quit"));
