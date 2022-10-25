@@ -19,6 +19,7 @@ GtkTreeModel *model;
 vector<filter_t> refresh_filters;
 vector<string> refresh_filenames;
 settings_t refresh_settings;
+GtkBuilder *builder;
 
 gboolean keypress_callback(GtkWidget *widget, GdkEventKey *event, gpointer data) {
   if (event->keyval == GDK_KEY_Escape) {
@@ -91,6 +92,13 @@ void add_filter_callback() {
   s.push_back("warn");
   refresh_filters = add_filter(refresh_filters, "Label", s, PATTERN_BASIC, false, false);
   std::rotate(refresh_filters.rbegin(), refresh_filters.rbegin() + 1, refresh_filters.rend());
+}
+
+void delete_filter_callback() {
+  GtkWidget *deleteFilterWindow = GTK_WIDGET(gtk_builder_get_object(builder, "delete-filter-window"));
+  gtk_window_set_default_size(GTK_WINDOW(deleteFilterWindow), 100, 100);
+  gtk_window_set_resizable(GTK_WINDOW(deleteFilterWindow), FALSE);
+  gtk_widget_show_all(deleteFilterWindow);
 }
 
 void show_about() {
@@ -168,13 +176,13 @@ cJSON *find(cJSON *tree, const char *str) {
 
 void graphics_main(vector<string> filenames) {
 
-  GtkBuilder *builder = gtk_builder_new();
+  builder = gtk_builder_new();
   gtk_builder_add_from_file(builder, "res/log_viewer.glade", NULL);
 
   GtkWidget *window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
   gtk_window_set_default_size(GTK_WINDOW(window), 1000, 700);
 
-  const char *buf = "Hello, World!";
+  const char *buf = "";
   statusbar = GTK_WIDGET(gtk_builder_get_object(builder, "statusbar"));
   gtk_statusbar_remove_all(GTK_STATUSBAR(statusbar), 0);
   gtk_statusbar_push(GTK_STATUSBAR(statusbar), 0, buf);
@@ -228,7 +236,7 @@ void graphics_main(vector<string> filenames) {
   g_signal_connect(G_OBJECT(about), "activate", G_CALLBACK(show_about), NULL);
   g_signal_connect(G_OBJECT(quit), "activate", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(addFilter), "clicked", G_CALLBACK(add_filter_callback), NULL);
-  g_signal_connect(G_OBJECT(deleteFilter), "clicked", G_CALLBACK(gtk_main_quit), NULL);
+  g_signal_connect(G_OBJECT(deleteFilter), "clicked", G_CALLBACK(delete_filter_callback), NULL);
   g_signal_connect(G_OBJECT(dateRange), "clicked", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(refresh), "clicked", G_CALLBACK(refresh_callback), NULL);
   g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
@@ -236,7 +244,7 @@ void graphics_main(vector<string> filenames) {
   //g_signal_connect(G_OBJECT(open), "activate", G_CALLBACK(open_file), NULL);
   //g_signal_connect(G_OBJECT(treeview), "cursor-changed", G_CALLBACK(foo), NULL);
 
-  g_object_unref(builder);
+  //g_object_unref(builder);
 
   gtk_widget_show_all(window);
   gtk_main();
