@@ -80,17 +80,15 @@ vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, s
            */
           if (filters[j].sample) {
             if (random() % 10 == 0) {
-              if (strcasestr(line.c_str(), "error") != 0) {
-                fprintf(f, "%s\n", line.c_str());
+              fprintf(f, "%s\n", line.c_str());
 
-                string token;
-                stringstream stream(line);
-                while (getline(stream, token, ' ')) {
-                  if (map.find(token) != map.end()) {
-                    map.at(token)++;
-                  } else {
-                    map.insert(pair<string, int>(token, 1));
-                  }
+              string token;
+              stringstream stream(line);
+              while (getline(stream, token, ' ')) {
+                if (map.find(token) != map.end()) {
+                  map.at(token)++;
+                } else {
+                  map.insert(pair<string, int>(token, 1));
                 }
               }
             }
