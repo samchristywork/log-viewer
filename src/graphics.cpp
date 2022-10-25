@@ -17,6 +17,7 @@ GtkTreeModel *model;
 
 vector<filter_t> refresh_filters;
 vector<string> refresh_filenames;
+settings_t refresh_settings;
 
 gboolean keypress_callback(GtkWidget *widget, GdkEventKey *event, gpointer data) {
   if (event->keyval == GDK_KEY_Escape) {
@@ -75,6 +76,7 @@ void add_data_to_model(GtkTreeModel *model, vector<filter_t> filters, vector<str
 }
 
 void refresh(){
+  refresh_filters = read_logs(refresh_filters, refresh_filenames, refresh_settings);
   gtk_tree_store_clear(GTK_TREE_STORE(model));
   add_data_to_model(model, refresh_filters, refresh_filenames);
 }
@@ -194,8 +196,6 @@ void graphics_main(vector<string> filenames) {
     filters = add_filter(filters, label->valuestring, s, PATTERN_BASIC, false, cJSON_IsTrue(sample));
     node = node->next;
   }
-
-  filters = read_logs(filters, filenames, settings);
 
   GtkWidget *treeview = GTK_WIDGET(gtk_builder_get_object(builder, "treeview"));
   model = build_model(treeview);

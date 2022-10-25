@@ -32,6 +32,10 @@ char *strptime2(const char *s, const char *format, struct tm *tm) {
 }
 
 vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, settings_t settings) {
+  for (unsigned int i = 0; i < filters.size(); i++) {
+    filters[i].count=0;
+    filters[i].matches.clear();
+  }
   FILE *f = fopen("ERRORS", "wb"); // REMOVE ME
   for (unsigned int i = 0; i < filenames.size(); i++) {
     cout << "Reading file: " << filenames[i] << endl;
