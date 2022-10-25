@@ -83,6 +83,21 @@ void refresh() {
   add_data_to_model(model, refresh_filters, refresh_filenames);
 }
 
+void row_activated_callback(GtkTreeView *view, GtkTreePath *path) {
+  GtkTreeModel *model = gtk_tree_view_get_model(view);
+
+  GtkTreeIter iter;
+  if (gtk_tree_model_get_iter(model, &iter, path)) {
+
+    char *data;
+    gtk_tree_model_get(model, &iter, 2, &data, -1);
+
+    puts(data);
+
+    g_free(data);
+  }
+}
+
 void refresh_callback() {
   refresh();
 }
@@ -268,6 +283,7 @@ void graphics_main(vector<string> filenames) {
   g_signal_connect(G_OBJECT(refresh), "clicked", G_CALLBACK(refresh_callback), NULL);
   g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(keypress_callback), NULL);
+  g_signal_connect(G_OBJECT(treeview), "row-activated", G_CALLBACK(row_activated_callback), NULL);
   //g_signal_connect(G_OBJECT(open), "activate", G_CALLBACK(open_file), NULL);
   //g_signal_connect(G_OBJECT(treeview), "cursor-changed", G_CALLBACK(foo), NULL);
 
