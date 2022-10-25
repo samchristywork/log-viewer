@@ -195,7 +195,7 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="add-filter">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
@@ -208,7 +208,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="delete-filter">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
@@ -221,7 +221,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="date-range">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>

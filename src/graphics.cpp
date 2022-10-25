@@ -205,6 +205,9 @@ void graphics_main(vector<string> filenames) {
   refresh();
 
   GtkWidget *quit = GTK_WIDGET(gtk_builder_get_object(builder, "quit"));
+  GtkWidget *addFilter = GTK_WIDGET(gtk_builder_get_object(builder, "add-filter"));
+  GtkWidget *deleteFilter = GTK_WIDGET(gtk_builder_get_object(builder, "delete-filter"));
+  GtkWidget *dateRange = GTK_WIDGET(gtk_builder_get_object(builder, "date-range"));
   GtkWidget *refresh = GTK_WIDGET(gtk_builder_get_object(builder, "refresh"));
 
   GtkCssProvider *css = gtk_css_provider_new();
@@ -216,6 +219,9 @@ void graphics_main(vector<string> filenames) {
   gtk_widget_add_events(window, GDK_KEY_PRESS_MASK);
   g_signal_connect(G_OBJECT(about), "activate", G_CALLBACK(show_about), NULL);
   g_signal_connect(G_OBJECT(quit), "activate", G_CALLBACK(gtk_main_quit), NULL);
+  g_signal_connect(G_OBJECT(addFilter), "clicked", G_CALLBACK(gtk_main_quit), NULL);
+  g_signal_connect(G_OBJECT(deleteFilter), "clicked", G_CALLBACK(gtk_main_quit), NULL);
+  g_signal_connect(G_OBJECT(dateRange), "clicked", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(refresh), "clicked", G_CALLBACK(refresh_callback), NULL);
   g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(keypress_callback), NULL);
