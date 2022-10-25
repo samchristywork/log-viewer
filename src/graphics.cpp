@@ -10,16 +10,16 @@
 
 using namespace std;
 
-settings_t settings = {
-    false};
+settings_t settings = {false};
 
-GtkWidget *statusbar;
+GtkBuilder *builder;
 GtkTreeModel *model;
+GtkWidget *deleteFilterWindow;
+GtkWidget *statusbar;
 
+settings_t refresh_settings;
 vector<filter_t> refresh_filters;
 vector<string> refresh_filenames;
-settings_t refresh_settings;
-GtkBuilder *builder;
 
 gboolean keypress_callback(GtkWidget *widget, GdkEventKey *event, gpointer data) {
   if (event->keyval == GDK_KEY_Escape) {
@@ -94,11 +94,38 @@ void add_filter_callback() {
   std::rotate(refresh_filters.rbegin(), refresh_filters.rbegin() + 1, refresh_filters.rend());
 }
 
+void remove_button_callback() {
+  gtk_widget_hide(deleteFilterWindow);
+  refresh();
+}
+
+void cancel_button_callback() {
+  gtk_widget_hide(deleteFilterWindow);
+}
+
 void delete_filter_callback() {
-  GtkWidget *deleteFilterWindow = GTK_WIDGET(gtk_builder_get_object(builder, "delete-filter-window"));
-  gtk_window_set_default_size(GTK_WINDOW(deleteFilterWindow), 100, 100);
+  deleteFilterWindow = GTK_WIDGET(gtk_builder_get_object(builder, "delete-filter-window"));
+
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+  for (unsigned int i = 0; i < refresh_filters.size(); i++) {
+    GtkWidget *check = gtk_check_button_new_with_label(refresh_filters[i].label.c_str());
+    gtk_container_add(GTK_CONTAINER(box), check);
+  }
+
+  GtkWidget *removeButton = gtk_button_new_with_label("Remove");
+  gtk_container_add(GTK_CONTAINER(box), removeButton);
+
+  GtkWidget *cancelButton = gtk_button_new_with_label("Cancel");
+  gtk_container_add(GTK_CONTAINER(box), cancelButton);
+
+  gtk_container_add(GTK_CONTAINER(deleteFilterWindow), box);
   gtk_window_set_resizable(GTK_WINDOW(deleteFilterWindow), FALSE);
   gtk_widget_show_all(deleteFilterWindow);
+
+  g_signal_connect(G_OBJECT(removeButton), "clicked", G_CALLBACK(remove_button_callback), NULL);
+  g_signal_connect(G_OBJECT(cancelButton), "clicked", G_CALLBACK(cancel_button_callback), NULL);
+  g_signal_connect(G_OBJECT(deleteFilterWindow), "key_press_event", G_CALLBACK(keypress_callback), NULL);
 }
 
 void show_about() {
