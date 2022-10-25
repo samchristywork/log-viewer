@@ -32,6 +32,10 @@ char *strptime2(const char *s, const char *format, struct tm *tm) {
   return (char *)(s + input.tellg());
 }
 
+bool invalid(char c) {
+  return c==27;
+}
+
 vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, settings_t settings) {
 
   ofstream o;
@@ -81,7 +85,7 @@ vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, s
 
                 string token;
                 stringstream stream(line);
-                while(getline(stream, token, ' ')) {
+                while (getline(stream, token, ' ')) {
                   if (map.find(token) != map.end()) {
                     map.at(token)++;
                   } else {
@@ -109,8 +113,10 @@ vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, s
       lineno++;
     }
   }
-  for ( const auto &pair : map ) {
-    o << map.at(pair.first) << "\t" << pair.first << "\n";
+  for (const auto &pair : map) {
+    string str = pair.first.c_str();
+    str.erase(remove_if(str.begin(), str.end(), invalid), str.end());
+    o << map.at(pair.first) << "\t" << str << endl;
   }
   o.close();
   for (filter_t filter : filters) {
