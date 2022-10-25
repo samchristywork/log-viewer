@@ -6,14 +6,14 @@
 
 using namespace std;
 
-vector<filter_t> add_filter(vector<filter_t> filters, const char *label, vector<string> patterns, bool isregex, bool discard, bool sample) {
+vector<filter_t> add_filter(vector<filter_t> filters, const char *label, vector<string> patterns, int pattern_type, bool discard, bool sample) {
   filter_t filter;
 
   filter.count = 0;
   filter.label = label;
   filter.patterns = patterns;
   filter.sample = sample;
-  filter.isregex = false;
+  filter.pattern_type = pattern_type;
 
   filter.discard = discard;
 
@@ -41,7 +41,7 @@ vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, s
     while (getline(handler, line)) {
       for (unsigned int j = 0; j < filters.size(); j++) {
         bool match = false;
-        if (!filters[j].isregex) {
+        if (filters[j].pattern_type==PATTERN_BASIC) {
           bool allmatch = true;
           for (unsigned int k = 0; k < filters[j].patterns.size(); k++) {
             if (strcasestr(line.c_str(), filters[j].patterns[k].c_str()) == 0) {

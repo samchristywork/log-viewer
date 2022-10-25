@@ -191,7 +191,7 @@ void graphics_main(vector<string> filenames) {
       s.push_back(pattern->valuestring);
       pattern = pattern->next;
     }
-    filters = add_filter(filters, label->valuestring, s, false, false, cJSON_IsTrue(sample));
+    filters = add_filter(filters, label->valuestring, s, PATTERN_BASIC, false, cJSON_IsTrue(sample));
     node = node->next;
   }
 

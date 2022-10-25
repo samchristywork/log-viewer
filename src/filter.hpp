@@ -8,6 +8,12 @@
 
 using namespace std;
 
+enum {
+  PATTERN_NONE = 0,
+  PATTERN_BASIC,
+  PATTERN_REGEX
+};
+
 struct settings_t {
   bool filter_passthrough;
 };
@@ -21,16 +27,16 @@ typedef struct match_t {
 typedef struct filter_t {
   GtkTreeIter iter;
   bool discard;
-  bool isregex;
   bool sample;
-  vector<regex_t> compiled_regexes;
+  int pattern_type;
   string label;
-  vector<string> patterns;
   unsigned long count;
   vector<match_t> matches;
+  vector<regex_t> compiled_regexes;
+  vector<string> patterns;
 } filter_t;
 
-vector<filter_t> add_filter(vector<filter_t> filters, const char *label, vector<string> patterns, bool isregex, bool discard, bool sample);
+vector<filter_t> add_filter(vector<filter_t> filters, const char *label, vector<string> patterns, int pattern_type, bool discard, bool sample);
 vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, settings_t settings);
 
 #endif
