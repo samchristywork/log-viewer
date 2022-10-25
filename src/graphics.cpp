@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cjson/cJSON.h>
 #include <gtk/gtk.h>
 #include <iostream>
@@ -83,6 +84,13 @@ void refresh(){
 
 void refresh_callback() {
   refresh();
+}
+
+void add_filter_callback(){
+  vector<string> s;
+  s.push_back("warn");
+  refresh_filters = add_filter(refresh_filters, "Label", s, PATTERN_BASIC, false, false);
+  std::rotate(refresh_filters.rbegin(), refresh_filters.rbegin() + 1, refresh_filters.rend());
 }
 
 void show_about() {
@@ -219,7 +227,7 @@ void graphics_main(vector<string> filenames) {
   gtk_widget_add_events(window, GDK_KEY_PRESS_MASK);
   g_signal_connect(G_OBJECT(about), "activate", G_CALLBACK(show_about), NULL);
   g_signal_connect(G_OBJECT(quit), "activate", G_CALLBACK(gtk_main_quit), NULL);
-  g_signal_connect(G_OBJECT(addFilter), "clicked", G_CALLBACK(gtk_main_quit), NULL);
+  g_signal_connect(G_OBJECT(addFilter), "clicked", G_CALLBACK(add_filter_callback), NULL);
   g_signal_connect(G_OBJECT(deleteFilter), "clicked", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(dateRange), "clicked", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(refresh), "clicked", G_CALLBACK(refresh_callback), NULL);
