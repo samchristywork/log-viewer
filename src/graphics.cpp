@@ -84,6 +84,15 @@ void refresh() {
   add_data_to_model(model, refresh_filters, refresh_filenames);
 }
 
+gboolean date_range_keypress_callback(GtkWidget *widget, GdkEventKey *event, gpointer data) {
+  if (event->keyval == GDK_KEY_Escape) {
+    gtk_widget_hide(widget);
+    gtk_widget_show_all(window);
+    return TRUE;
+  }
+  return FALSE;
+}
+
 void row_activated_callback(GtkTreeView *view, GtkTreePath *path) {
   GtkTreeModel *model = gtk_tree_view_get_model(view);
 
@@ -227,7 +236,9 @@ void graphics_main(vector<string> filenames) {
   gtk_builder_add_from_file(builder, "res/log_viewer.glade", NULL);
 
   GtkWidget *date_range_window = GTK_WIDGET(gtk_builder_get_object(builder, "date-range-window"));
+  gtk_window_set_resizable(GTK_WINDOW(date_range_window), FALSE);
   gtk_widget_show_all(date_range_window);
+  g_signal_connect(G_OBJECT(date_range_window), "key_press_event", G_CALLBACK(date_range_keypress_callback), NULL);
 
   window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
   gtk_window_set_default_size(GTK_WINDOW(window), 1000, 700);
