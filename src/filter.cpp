@@ -52,13 +52,14 @@ vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, s
     boost::filesystem::path p(filenames[i]);
     if (boost::filesystem::exists(p)) {
       time_t t = boost::filesystem::last_write_time(p);
-      if (t < 1666450911+24*60*60*3) {
+      if ((t > settings.low_end || settings.low_end == 0) &&
+          (t < settings.high_end || settings.high_end == 0)) {
+        cout << "Reading file: " << filenames[i] << endl;
+      } else {
         cout << "Skipping: " << filenames[i] << endl;
         continue;
       }
     }
-
-    cout << "Reading file: " << filenames[i] << endl;
 
     boost::filesystem::ifstream handler(filenames[i]);
     string line;

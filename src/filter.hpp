@@ -16,6 +16,8 @@ enum {
 
 struct settings_t {
   bool filter_passthrough;
+  time_t low_end;
+  time_t high_end;
 };
 
 typedef struct match_t {

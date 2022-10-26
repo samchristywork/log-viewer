@@ -10,7 +10,7 @@
 
 using namespace std;
 
-settings_t settings = {false};
+settings_t settings;
 
 GtkBuilder *builder;
 GtkTreeModel *model;
@@ -217,6 +217,10 @@ cJSON *find(cJSON *tree, const char *str) {
 }
 
 void graphics_main(vector<string> filenames) {
+
+  settings.filter_passthrough = false;
+  settings.low_end = 0;
+  settings.high_end = 0;
 
   builder = gtk_builder_new();
   gtk_builder_add_from_file(builder, "res/log_viewer.glade", NULL);
