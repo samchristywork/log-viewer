@@ -16,6 +16,7 @@ GtkBuilder *builder;
 GtkTreeModel *model;
 GtkWidget *deleteFilterWindow;
 GtkWidget *statusbar;
+GtkWidget *window;
 
 settings_t refresh_settings;
 vector<filter_t> refresh_filters;
@@ -225,7 +226,10 @@ void graphics_main(vector<string> filenames) {
   builder = gtk_builder_new();
   gtk_builder_add_from_file(builder, "res/log_viewer.glade", NULL);
 
-  GtkWidget *window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
+  GtkWidget *date_range_window = GTK_WIDGET(gtk_builder_get_object(builder, "date-range-window"));
+  gtk_widget_show_all(date_range_window);
+
+  window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
   gtk_window_set_default_size(GTK_WINDOW(window), 1000, 700);
 
   const char *buf = "";
@@ -288,11 +292,6 @@ void graphics_main(vector<string> filenames) {
   g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(keypress_callback), NULL);
   g_signal_connect(G_OBJECT(treeview), "row-activated", G_CALLBACK(row_activated_callback), NULL);
-  //g_signal_connect(G_OBJECT(open), "activate", G_CALLBACK(open_file), NULL);
-  //g_signal_connect(G_OBJECT(treeview), "cursor-changed", G_CALLBACK(foo), NULL);
 
-  //g_object_unref(builder);
-
-  gtk_widget_show_all(window);
   gtk_main();
 }
