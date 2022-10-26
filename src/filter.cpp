@@ -33,7 +33,7 @@ char *strptime2(const char *s, const char *format, struct tm *tm) {
 }
 
 bool invalid(char c) {
-  return c==27;
+  return c == 27;
 }
 
 vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, settings_t settings) {
@@ -48,7 +48,18 @@ vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, s
   }
   FILE *f = fopen("ERRORS", "wb"); // REMOVE ME
   for (unsigned int i = 0; i < filenames.size(); i++) {
+
+    boost::filesystem::path p(filenames[i]);
+    if (boost::filesystem::exists(p)) {
+      time_t t = boost::filesystem::last_write_time(p);
+      if (t < 1666450911+24*60*60*3) {
+        cout << "Skipping: " << filenames[i] << endl;
+        continue;
+      }
+    }
+
     cout << "Reading file: " << filenames[i] << endl;
+
     boost::filesystem::ifstream handler(filenames[i]);
     string line;
     int lineno = 0;
