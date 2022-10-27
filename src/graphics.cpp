@@ -26,7 +26,6 @@ GtkWidget *spinbutton4;
 GtkWidget *calendar1;
 GtkWidget *calendar2;
 
-settings_t refresh_settings;
 vector<filter_t> refresh_filters;
 vector<string> refresh_filenames;
 
@@ -87,7 +86,7 @@ void add_data_to_model(GtkTreeModel *model, vector<filter_t> filters, vector<str
 }
 
 void refresh() {
-  refresh_filters = read_logs(refresh_filters, refresh_filenames, refresh_settings);
+  refresh_filters = read_logs(refresh_filters, refresh_filenames, settings);
   gtk_tree_store_clear(GTK_TREE_STORE(model));
   add_data_to_model(model, refresh_filters, refresh_filenames);
 }
