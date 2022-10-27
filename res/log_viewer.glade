@@ -47,7 +47,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkSpinButton">
+                      <object class="GtkSpinButton" id="spinbutton1">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                       </object>
@@ -70,7 +70,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSpinButton">
+                      <object class="GtkSpinButton" id="spinbutton2">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                       </object>
@@ -116,7 +116,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkSpinButton">
+                      <object class="GtkSpinButton" id="spinbutton3">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                       </object>
@@ -139,7 +139,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSpinButton">
+                      <object class="GtkSpinButton" id="spinbutton4">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                       </object>
