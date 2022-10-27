@@ -17,6 +17,7 @@ GtkTreeModel *model;
 GtkWidget *deleteFilterWindow;
 GtkWidget *statusbar;
 GtkWidget *window;
+GtkWidget *date_range_window;
 
 settings_t refresh_settings;
 vector<filter_t> refresh_filters;
@@ -84,9 +85,22 @@ void refresh() {
   add_data_to_model(model, refresh_filters, refresh_filenames);
 }
 
+void date_range_cancel_callback() {
+  refresh();
+  gtk_widget_hide(date_range_window);
+  gtk_widget_show_all(window);
+}
+
+void date_range_apply_callback() {
+  refresh();
+  gtk_widget_hide(date_range_window);
+  gtk_widget_show_all(window);
+}
+
 gboolean date_range_keypress_callback(GtkWidget *widget, GdkEventKey *event, gpointer data) {
   if (event->keyval == GDK_KEY_Escape) {
     gtk_widget_hide(widget);
+    refresh();
     gtk_widget_show_all(window);
     return TRUE;
   }
@@ -117,6 +131,7 @@ void add_filter_callback() {
   s.push_back("warn");
   refresh_filters = add_filter(refresh_filters, "Label", s, PATTERN_BASIC, false, false);
   std::rotate(refresh_filters.rbegin(), refresh_filters.rbegin() + 1, refresh_filters.rend());
+  refresh();
 }
 
 void remove_button_callback() {
@@ -235,10 +250,14 @@ void graphics_main(vector<string> filenames) {
   builder = gtk_builder_new();
   gtk_builder_add_from_file(builder, "res/log_viewer.glade", NULL);
 
-  GtkWidget *date_range_window = GTK_WIDGET(gtk_builder_get_object(builder, "date-range-window"));
+  date_range_window = GTK_WIDGET(gtk_builder_get_object(builder, "date-range-window"));
   gtk_window_set_resizable(GTK_WINDOW(date_range_window), FALSE);
-  gtk_widget_show_all(date_range_window);
+  GtkWidget *date_range_cancel_button = GTK_WIDGET(gtk_builder_get_object(builder, "date-range-cancel"));
+  GtkWidget *date_range_apply_button = GTK_WIDGET(gtk_builder_get_object(builder, "date-range-apply"));
+  g_signal_connect(G_OBJECT(date_range_cancel_button), "clicked", G_CALLBACK(date_range_cancel_callback), NULL);
+  g_signal_connect(G_OBJECT(date_range_apply_button), "clicked", G_CALLBACK(date_range_apply_callback), NULL);
   g_signal_connect(G_OBJECT(date_range_window), "key_press_event", G_CALLBACK(date_range_keypress_callback), NULL);
+  gtk_widget_show_all(date_range_window);
 
   window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
   gtk_window_set_default_size(GTK_WINDOW(window), 1000, 700);
@@ -279,7 +298,6 @@ void graphics_main(vector<string> filenames) {
 
   refresh_filters = filters;
   refresh_filenames = filenames;
-  refresh();
 
   GtkWidget *quit = GTK_WIDGET(gtk_builder_get_object(builder, "quit"));
   GtkWidget *addFilter = GTK_WIDGET(gtk_builder_get_object(builder, "add-filter"));
