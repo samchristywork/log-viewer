@@ -259,8 +259,10 @@ void graphics_main(vector<string> filenames) {
   GtkWidget *date_range_apply_button = GTK_WIDGET(gtk_builder_get_object(builder, "date-range-apply"));
   GtkWidget *calendar1 = GTK_WIDGET(gtk_builder_get_object(builder, "calendar1"));
   gtk_calendar_select_month(GTK_CALENDAR(calendar1), time.date().month(), time.date().year());
+  gtk_calendar_select_day(GTK_CALENDAR(calendar1), time.date().day());
   GtkWidget *calendar2 = GTK_WIDGET(gtk_builder_get_object(builder, "calendar2"));
   gtk_calendar_select_month(GTK_CALENDAR(calendar2), time.date().month(), time.date().year());
+  gtk_calendar_select_day(GTK_CALENDAR(calendar1), time.date().day());
   g_signal_connect(G_OBJECT(date_range_cancel_button), "clicked", G_CALLBACK(date_range_cancel_callback), NULL);
   g_signal_connect(G_OBJECT(date_range_apply_button), "clicked", G_CALLBACK(date_range_apply_callback), NULL);
   g_signal_connect(G_OBJECT(date_range_window), "key_press_event", G_CALLBACK(date_range_keypress_callback), NULL);
