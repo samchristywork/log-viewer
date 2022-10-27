@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <boost/date_time.hpp>
 #include <cjson/cJSON.h>
 #include <gtk/gtk.h>
 #include <iostream>
@@ -243,6 +244,8 @@ cJSON *find(cJSON *tree, const char *str) {
 
 void graphics_main(vector<string> filenames) {
 
+  boost::posix_time::ptime time = boost::posix_time::second_clock::local_time();
+
   settings.filter_passthrough = false;
   settings.low_end = 0;
   settings.high_end = 0;
@@ -254,6 +257,10 @@ void graphics_main(vector<string> filenames) {
   gtk_window_set_resizable(GTK_WINDOW(date_range_window), FALSE);
   GtkWidget *date_range_cancel_button = GTK_WIDGET(gtk_builder_get_object(builder, "date-range-cancel"));
   GtkWidget *date_range_apply_button = GTK_WIDGET(gtk_builder_get_object(builder, "date-range-apply"));
+  GtkWidget *calendar1 = GTK_WIDGET(gtk_builder_get_object(builder, "calendar1"));
+  gtk_calendar_select_month(GTK_CALENDAR(calendar1), time.date().month(), time.date().year());
+  GtkWidget *calendar2 = GTK_WIDGET(gtk_builder_get_object(builder, "calendar2"));
+  gtk_calendar_select_month(GTK_CALENDAR(calendar2), time.date().month(), time.date().year());
   g_signal_connect(G_OBJECT(date_range_cancel_button), "clicked", G_CALLBACK(date_range_cancel_callback), NULL);
   g_signal_connect(G_OBJECT(date_range_apply_button), "clicked", G_CALLBACK(date_range_apply_callback), NULL);
   g_signal_connect(G_OBJECT(date_range_window), "key_press_event", G_CALLBACK(date_range_keypress_callback), NULL);
