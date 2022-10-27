@@ -98,15 +98,40 @@ void date_range_cancel_callback() {
 }
 
 void date_range_apply_callback() {
-  unsigned int d1, d2, m1, m2, y1, y2;
+  unsigned int mi1, mi2, h1, h2, d1, d2, m1, m2, y1, y2;
   gtk_calendar_get_date(GTK_CALENDAR(calendar1), &y1, &m1, &d1);
   gtk_calendar_get_date(GTK_CALENDAR(calendar2), &y2, &m2, &d2);
+  h1 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinbutton1));
+  mi1 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinbutton2));
+  h2 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinbutton3));
+  mi2 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinbutton4));
+  m1++;
+  m2++;
   cout << y1 << "-" << m1 << "-" << d1 << " ";
-  cout << gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinbutton1)) << ":";
-  cout << gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinbutton2)) << endl;
+  cout << h1 << ":" << mi1 << endl;
   cout << y2 << "-" << m2 << "-" << d2 << " ";
-  cout << gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinbutton3)) << ":";
-  cout << gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinbutton4)) << endl;
+  cout << h2 << ":" << mi2 << endl;
+
+  struct tm tm1;
+  tm1.tm_sec = 0;
+  tm1.tm_min = mi1;
+  tm1.tm_hour = h1;
+  tm1.tm_mday = d1;
+  tm1.tm_mon = m1 - 1;
+  tm1.tm_year = y1 - 1900;
+  settings.low_end = mktime(&tm1);
+
+  struct tm tm2;
+  tm2.tm_sec = 0;
+  tm2.tm_min = mi2;
+  tm2.tm_hour = h2;
+  tm2.tm_mday = d2;
+  tm2.tm_mon = m2 - 1;
+  tm2.tm_year = y2 - 1900;
+  settings.high_end = mktime(&tm2);
+
+  cout << settings.low_end << endl;
+  cout << settings.high_end << endl;
 
   refresh();
   gtk_widget_hide(date_range_window);
@@ -273,10 +298,10 @@ void graphics_main(vector<string> filenames) {
   GtkWidget *date_range_cancel_button = GTK_WIDGET(gtk_builder_get_object(builder, "date-range-cancel"));
   GtkWidget *date_range_apply_button = GTK_WIDGET(gtk_builder_get_object(builder, "date-range-apply"));
   calendar1 = GTK_WIDGET(gtk_builder_get_object(builder, "calendar1"));
-  gtk_calendar_select_month(GTK_CALENDAR(calendar1), time.date().month(), time.date().year());
+  gtk_calendar_select_month(GTK_CALENDAR(calendar1), time.date().month() - 1, time.date().year());
   gtk_calendar_select_day(GTK_CALENDAR(calendar1), time.date().day());
   calendar2 = GTK_WIDGET(gtk_builder_get_object(builder, "calendar2"));
-  gtk_calendar_select_month(GTK_CALENDAR(calendar2), time.date().month(), time.date().year());
+  gtk_calendar_select_month(GTK_CALENDAR(calendar2), time.date().month() - 1, time.date().year());
   gtk_calendar_select_day(GTK_CALENDAR(calendar1), time.date().day());
 
   GtkAdjustment *adjustment1 = gtk_adjustment_new(0.0, 0.0, 23.0, 1.0, 1.0, 0.0);
