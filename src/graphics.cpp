@@ -19,6 +19,12 @@ GtkWidget *deleteFilterWindow;
 GtkWidget *statusbar;
 GtkWidget *window;
 GtkWidget *date_range_window;
+GtkWidget *spinbutton1;
+GtkWidget *spinbutton2;
+GtkWidget *spinbutton3;
+GtkWidget *spinbutton4;
+GtkWidget *calendar1;
+GtkWidget *calendar2;
 
 settings_t refresh_settings;
 vector<filter_t> refresh_filters;
@@ -93,6 +99,16 @@ void date_range_cancel_callback() {
 }
 
 void date_range_apply_callback() {
+  unsigned int d1, d2, m1, m2, y1, y2;
+  gtk_calendar_get_date(GTK_CALENDAR(calendar1), &y1, &m1, &d1);
+  gtk_calendar_get_date(GTK_CALENDAR(calendar2), &y2, &m2, &d2);
+  cout << y1 << "-" << m1 << "-" << d1 << " ";
+  cout << gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinbutton1)) << ":";
+  cout << gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinbutton2)) << endl;
+  cout << y2 << "-" << m2 << "-" << d2 << " ";
+  cout << gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinbutton3)) << ":";
+  cout << gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinbutton4)) << endl;
+
   refresh();
   gtk_widget_hide(date_range_window);
   gtk_widget_show_all(window);
@@ -257,10 +273,10 @@ void graphics_main(vector<string> filenames) {
   gtk_window_set_resizable(GTK_WINDOW(date_range_window), FALSE);
   GtkWidget *date_range_cancel_button = GTK_WIDGET(gtk_builder_get_object(builder, "date-range-cancel"));
   GtkWidget *date_range_apply_button = GTK_WIDGET(gtk_builder_get_object(builder, "date-range-apply"));
-  GtkWidget *calendar1 = GTK_WIDGET(gtk_builder_get_object(builder, "calendar1"));
+  calendar1 = GTK_WIDGET(gtk_builder_get_object(builder, "calendar1"));
   gtk_calendar_select_month(GTK_CALENDAR(calendar1), time.date().month(), time.date().year());
   gtk_calendar_select_day(GTK_CALENDAR(calendar1), time.date().day());
-  GtkWidget *calendar2 = GTK_WIDGET(gtk_builder_get_object(builder, "calendar2"));
+  calendar2 = GTK_WIDGET(gtk_builder_get_object(builder, "calendar2"));
   gtk_calendar_select_month(GTK_CALENDAR(calendar2), time.date().month(), time.date().year());
   gtk_calendar_select_day(GTK_CALENDAR(calendar1), time.date().day());
 
@@ -268,13 +284,13 @@ void graphics_main(vector<string> filenames) {
   GtkAdjustment *adjustment2 = gtk_adjustment_new(0.0, 0.0, 59.0, 1.0, 1.0, 0.0);
   GtkAdjustment *adjustment3 = gtk_adjustment_new(23.0, 0.0, 59.0, 1.0, 1.0, 0.0);
   GtkAdjustment *adjustment4 = gtk_adjustment_new(59.0, 0.0, 59.0, 1.0, 1.0, 0.0);
-  GtkWidget *spinbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "spinbutton1"));
+  spinbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "spinbutton1"));
+  spinbutton2 = GTK_WIDGET(gtk_builder_get_object(builder, "spinbutton2"));
+  spinbutton3 = GTK_WIDGET(gtk_builder_get_object(builder, "spinbutton3"));
+  spinbutton4 = GTK_WIDGET(gtk_builder_get_object(builder, "spinbutton4"));
   gtk_spin_button_set_adjustment(GTK_SPIN_BUTTON(spinbutton1), adjustment1);
-  GtkWidget *spinbutton2 = GTK_WIDGET(gtk_builder_get_object(builder, "spinbutton2"));
   gtk_spin_button_set_adjustment(GTK_SPIN_BUTTON(spinbutton2), adjustment2);
-  GtkWidget *spinbutton3 = GTK_WIDGET(gtk_builder_get_object(builder, "spinbutton3"));
   gtk_spin_button_set_adjustment(GTK_SPIN_BUTTON(spinbutton3), adjustment3);
-  GtkWidget *spinbutton4 = GTK_WIDGET(gtk_builder_get_object(builder, "spinbutton4"));
   gtk_spin_button_set_adjustment(GTK_SPIN_BUTTON(spinbutton4), adjustment4);
 
   g_signal_connect(G_OBJECT(date_range_cancel_button), "clicked", G_CALLBACK(date_range_cancel_callback), NULL);
