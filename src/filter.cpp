@@ -39,9 +39,10 @@ bool invalid(char c) {
 vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, settings_t settings) {
 
   boost::filesystem::create_directories("output/");
-  ofstream o;
-  o.open("output/histogram");
-  FILE *f = fopen("output/errors", "wb");
+  ofstream histogram;
+  histogram.open("output/histogram");
+  ofstream errors;
+  errors.open("output/errors");
   map<string, int> map;
 
   for (unsigned int i = 0; i < filters.size(); i++) {
@@ -94,7 +95,7 @@ vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, s
            */
           if (filters[j].sample) {
             if (random() % 10 == 0) {
-              fprintf(f, "%s\n", line.c_str());
+              errors << line << endl;
 
               string token;
               stringstream stream(line);
@@ -128,9 +129,9 @@ vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, s
   for (const auto &pair : map) {
     string str = pair.first.c_str();
     str.erase(remove_if(str.begin(), str.end(), invalid), str.end());
-    o << map.at(pair.first) << "\t" << str << endl;
+    histogram << map.at(pair.first) << "\t" << str << endl;
   }
-  o.close();
+  histogram.close();
   for (filter_t filter : filters) {
     //if(filter.isregex){
     //  regfree(&filter.compiled_regex);
