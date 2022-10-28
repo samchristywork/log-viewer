@@ -329,7 +329,6 @@ void graphics_main(vector<string> filenames) {
   statusbar = GTK_WIDGET(gtk_builder_get_object(builder, "statusbar"));
   gtk_statusbar_remove_all(GTK_STATUSBAR(statusbar), 0);
   gtk_statusbar_push(GTK_STATUSBAR(statusbar), 0, buf);
-  GtkWidget *about = GTK_WIDGET(gtk_builder_get_object(builder, "about"));
 
   vector<filter_t> filters;
 
@@ -362,12 +361,6 @@ void graphics_main(vector<string> filenames) {
   refresh_filters = filters;
   refresh_filenames = filenames;
 
-  GtkWidget *quit = GTK_WIDGET(gtk_builder_get_object(builder, "quit"));
-  GtkWidget *addFilter = GTK_WIDGET(gtk_builder_get_object(builder, "add-filter"));
-  GtkWidget *deleteFilter = GTK_WIDGET(gtk_builder_get_object(builder, "delete-filter"));
-  GtkWidget *dateRange = GTK_WIDGET(gtk_builder_get_object(builder, "date-range"));
-  GtkWidget *refresh = GTK_WIDGET(gtk_builder_get_object(builder, "refresh"));
-
   GtkCssProvider *css = gtk_css_provider_new();
   gtk_css_provider_load_from_path(css, "res/style.css", NULL);
   gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(css), GTK_STYLE_PROVIDER_PRIORITY_USER);
@@ -375,12 +368,27 @@ void graphics_main(vector<string> filenames) {
   gtk_builder_connect_signals(builder, NULL);
 
   gtk_widget_add_events(window, GDK_KEY_PRESS_MASK);
-  g_signal_connect(G_OBJECT(about), "activate", G_CALLBACK(show_about), NULL);
-  g_signal_connect(G_OBJECT(quit), "activate", G_CALLBACK(gtk_main_quit), NULL);
-  g_signal_connect(G_OBJECT(addFilter), "clicked", G_CALLBACK(add_filter_callback), NULL);
-  g_signal_connect(G_OBJECT(deleteFilter), "clicked", G_CALLBACK(delete_filter_callback), NULL);
-  g_signal_connect(G_OBJECT(dateRange), "clicked", G_CALLBACK(gtk_main_quit), NULL);
-  g_signal_connect(G_OBJECT(refresh), "clicked", G_CALLBACK(refresh_callback), NULL);
+  g_signal_connect(G_OBJECT(GTK_WIDGET(
+          gtk_builder_get_object(builder, "about"))
+        ), "activate", G_CALLBACK(show_about), NULL);
+  g_signal_connect(G_OBJECT(GTK_WIDGET(
+          gtk_builder_get_object(builder, "quit"))
+        ), "activate", G_CALLBACK(gtk_main_quit), NULL);
+  g_signal_connect(G_OBJECT(GTK_WIDGET(
+          gtk_builder_get_object(builder, "add-filter"))
+        ), "clicked", G_CALLBACK(add_filter_callback), NULL);
+  g_signal_connect(G_OBJECT(
+        GTK_WIDGET(
+          gtk_builder_get_object(builder, "delete-filter"))
+        ), "clicked", G_CALLBACK(delete_filter_callback), NULL);
+  g_signal_connect(G_OBJECT(
+        GTK_WIDGET(
+          gtk_builder_get_object(builder, "date-range"))
+        ), "clicked", G_CALLBACK(gtk_main_quit), NULL);
+  g_signal_connect(G_OBJECT(
+        GTK_WIDGET(
+          gtk_builder_get_object(builder, "refresh"))
+        ), "clicked", G_CALLBACK(refresh_callback), NULL);
   g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(keypress_callback), NULL);
   g_signal_connect(G_OBJECT(treeview), "row-activated", G_CALLBACK(row_activated_callback), NULL);
