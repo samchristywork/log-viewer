@@ -38,15 +38,17 @@ bool invalid(char c) {
 
 vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, settings_t settings) {
 
+  boost::filesystem::create_directories("output/");
   ofstream o;
-  o.open("histogram");
+  o.open("output/histogram");
+  FILE *f = fopen("output/errors", "wb");
   map<string, int> map;
 
   for (unsigned int i = 0; i < filters.size(); i++) {
     filters[i].count = 0;
     filters[i].matches.clear();
   }
-  FILE *f = fopen("ERRORS", "wb"); // REMOVE ME
+
   for (unsigned int i = 0; i < filenames.size(); i++) {
 
     boost::filesystem::path p(filenames[i]);
