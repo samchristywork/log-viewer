@@ -132,10 +132,6 @@ vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, s
     histogram << map.at(pair.first) << "\t" << str << endl;
   }
   histogram.close();
-  for (filter_t filter : filters) {
-    //if(filter.isregex){
-    //  regfree(&filter.compiled_regex);
-    //}
-  }
+  errors.close();
   return filters;
 }
