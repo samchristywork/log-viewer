@@ -20,4 +20,4 @@ build/log_viewer: src/log_viewer.cpp src/log_viewer.hpp build/graphics.o build/f
 clean:
 	rm -rf build/
 
-.PHONY: clean
+.PHONY: all clean
