@@ -47,6 +47,7 @@ void reporting_mechanism_renderer_func(GtkTreeViewColumn *col,
   gchar *escaped_string = g_markup_escape_text(raw_string, -1);
   gchar buf[PATH_MAX];
   snprintf(buf, sizeof(buf), "%s", escaped_string);
+  g_object_set(renderer, "editable", TRUE, NULL);
   g_object_set(renderer, "markup", buf, NULL); // Use "text" to exclude markup.
   free(escaped_string);
 }
@@ -62,6 +63,7 @@ void line_renderer_func(GtkTreeViewColumn *col,
     gchar *escaped_string = g_markup_escape_text(raw_string, -1);
     gchar buf[PATH_MAX];
     snprintf(buf, sizeof(buf), "%s", escaped_string); // TODO: Highlight filter matches
+    g_object_set(renderer, "editable", TRUE, NULL);
     g_object_set(renderer, "markup", buf, NULL); // Use "text" to exclude markup.
     free(escaped_string);
   }else{
