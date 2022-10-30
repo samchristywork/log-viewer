@@ -37,10 +37,26 @@ gboolean keypress_callback(GtkWidget *widget, GdkEventKey *event, gpointer data)
   return FALSE;
 }
 
+void reporting_mechanism_renderer_func(GtkTreeViewColumn *col,
+                        GtkCellRenderer *renderer,
+                        GtkTreeModel *model,
+                        GtkTreeIter *iter,
+                        gpointer user_data) {
+  char *raw_string = 0;
+  gtk_tree_model_get(model, iter, 2, &raw_string, -1);
+  gchar *escaped_string = g_markup_escape_text(raw_string, -1);
+  gchar buf[PATH_MAX];
+  snprintf(buf, sizeof(buf), "%s", escaped_string);
+  g_object_set(renderer, "markup", buf, NULL); // Use "text" to exclude markup.
+  free(escaped_string);
+}
+
 GtkTreeModel *build_model(GtkWidget *view) {
+  GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Category", gtk_cell_renderer_text_new(), "text", 0, NULL);
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Amount", gtk_cell_renderer_text_new(), "text", 1, NULL);
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Reporting Mechanism", gtk_cell_renderer_text_new(), "text", 2, NULL);
+  gtk_tree_view_insert_column_with_data_func(GTK_TREE_VIEW(view), -1, "Reporting Mechanism", renderer, reporting_mechanism_renderer_func, NULL, NULL);
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Line", gtk_cell_renderer_text_new(), "text", 3, NULL);
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Text", gtk_cell_renderer_text_new(), "text", 4, NULL);
   gtk_tree_view_column_set_resizable(gtk_tree_view_get_column(GTK_TREE_VIEW(view), 0), true);
