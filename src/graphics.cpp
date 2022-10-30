@@ -405,26 +405,26 @@ void graphics_main(vector<string> filenames) {
 
   gtk_widget_add_events(window, GDK_KEY_PRESS_MASK);
   g_signal_connect(G_OBJECT(GTK_WIDGET(
-          gtk_builder_get_object(builder, "about"))
-        ), "activate", G_CALLBACK(show_about), NULL);
+                       gtk_builder_get_object(builder, "about"))),
+                   "activate", G_CALLBACK(show_about), NULL);
   g_signal_connect(G_OBJECT(GTK_WIDGET(
-          gtk_builder_get_object(builder, "quit"))
-        ), "activate", G_CALLBACK(gtk_main_quit), NULL);
+                       gtk_builder_get_object(builder, "quit"))),
+                   "activate", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(GTK_WIDGET(
-          gtk_builder_get_object(builder, "add-filter"))
-        ), "clicked", G_CALLBACK(add_filter_callback), NULL);
+                       gtk_builder_get_object(builder, "add-filter"))),
+                   "clicked", G_CALLBACK(add_filter_callback), NULL);
   g_signal_connect(G_OBJECT(
-        GTK_WIDGET(
-          gtk_builder_get_object(builder, "delete-filter"))
-        ), "clicked", G_CALLBACK(delete_filter_callback), NULL);
+                       GTK_WIDGET(
+                           gtk_builder_get_object(builder, "delete-filter"))),
+                   "clicked", G_CALLBACK(delete_filter_callback), NULL);
   g_signal_connect(G_OBJECT(
-        GTK_WIDGET(
-          gtk_builder_get_object(builder, "date-range"))
-        ), "clicked", G_CALLBACK(gtk_main_quit), NULL);
+                       GTK_WIDGET(
+                           gtk_builder_get_object(builder, "date-range"))),
+                   "clicked", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(
-        GTK_WIDGET(
-          gtk_builder_get_object(builder, "refresh"))
-        ), "clicked", G_CALLBACK(refresh_callback), NULL);
+                       GTK_WIDGET(
+                           gtk_builder_get_object(builder, "refresh"))),
+                   "clicked", G_CALLBACK(refresh_callback), NULL);
   g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(keypress_callback), NULL);
   g_signal_connect(G_OBJECT(treeview), "row-activated", G_CALLBACK(row_activated_callback), NULL);
