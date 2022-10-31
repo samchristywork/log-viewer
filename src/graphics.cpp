@@ -339,6 +339,7 @@ void graphics_main(vector<string> filenames) {
   calendar2 = GTK_WIDGET(gtk_builder_get_object(builder, "calendar2"));
   gtk_calendar_select_month(GTK_CALENDAR(calendar2), time.date().month() - 1, time.date().year());
   gtk_calendar_select_day(GTK_CALENDAR(calendar1), time.date().day());
+  gtk_widget_grab_focus(GTK_WIDGET(date_range_apply_button));
 
   GtkAdjustment *adjustment1 = gtk_adjustment_new(0.0, 0.0, 23.0, 1.0, 1.0, 0.0);
   GtkAdjustment *adjustment2 = gtk_adjustment_new(0.0, 0.0, 59.0, 1.0, 1.0, 0.0);
