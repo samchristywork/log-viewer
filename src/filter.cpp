@@ -1,4 +1,5 @@
 #include <boost/filesystem.hpp>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <vector>
@@ -64,7 +65,7 @@ vector<filter_t> read_logs(vector<filter_t> filters, vector<string> filenames, s
       }
     }
 
-    boost::filesystem::ifstream handler(filenames[i]);
+    ifstream handler(filenames[i]);
     string line;
     int lineno = 0;
     while (getline(handler, line)) {
