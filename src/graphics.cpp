@@ -8,6 +8,7 @@
 #include "filter.hpp"
 #include "graphics.hpp"
 #include "log_viewer.hpp"
+#include "version.hpp"
 
 using namespace std;
 
@@ -259,7 +260,7 @@ void show_about() {
                         "logo", pbuf,
                         "program-name", "Log Viewer",
                         "title", "About Log Viewer",
-                        "version", "v1.0.0",
+                        "version", VERSION_STRING,
                         "website", "https://github.com/samchristywork",
                         "website-label", "github.com/samchristywork",
                         NULL);
