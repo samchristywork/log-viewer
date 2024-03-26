@@ -1,4 +1,4 @@
-![Banner](https://s-christy.com/status-banner-service/log-viewer/banner-slim.svg)
+![Banner](https://s-christy.com/sbs/status-banner.svg?icon=content/ballot&hue=150&title=Log%20Viewer&description=For%20organizations%20with%20more%20log%20files%20than%20engineers)
 
 ## Overview
 
